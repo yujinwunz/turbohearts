@@ -1,0 +1,62 @@
+
+cards.pack.png
+size: 1024,512
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+ball
+  rotate: false
+  xy: 2, 2
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+paddle_blink_left
+  rotate: false
+  xy: 2, 54
+  size: 52, 130
+  orig: 52, 130
+  offset: 0, 0
+  index: -1
+paddle_blink_right
+  rotate: false
+  xy: 516, 312
+  size: 52, 130
+  orig: 52, 130
+  offset: 0, 0
+  index: -1
+paddle_hit_left
+  rotate: false
+  xy: 56, 54
+  size: 52, 130
+  orig: 52, 130
+  offset: 0, 0
+  index: -1
+paddle_hit_right
+  rotate: false
+  xy: 570, 312
+  size: 52, 130
+  orig: 52, 130
+  offset: 0, 0
+  index: -1
+paddle_left
+  rotate: false
+  xy: 110, 54
+  size: 52, 130
+  orig: 52, 130
+  offset: 0, 0
+  index: -1
+paddle_right
+  rotate: false
+  xy: 624, 312
+  size: 52, 130
+  orig: 52, 130
+  offset: 0, 0
+  index: -1
+sprites.pack
+  rotate: false
+  xy: 2, 186
+  size: 512, 256
+  orig: 512, 256
+  offset: 0, 0
+  index: -1

@@ -14,5 +14,5 @@ for root, dirs, files in os.walk(input_dir):
         #with open(os.path.join(root, f), "w") as newf:
         #    newf.write(contents)
 
-        subprocess.check_output(["svg2png", "--width", "7000", "--height", "3600", os.path.join(root, f)])
+        subprocess.check_output(["svg2png", "--width", "500", "--height", "358", os.path.join(root, f)])
    

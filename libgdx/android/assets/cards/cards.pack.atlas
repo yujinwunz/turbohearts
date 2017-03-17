@@ -1,0 +1,442 @@
+
+cards.pack.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+10c
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+10d
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+10h
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+10s
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack2.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+2c
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+2d
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+2h
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+2s
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack3.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+3c
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+3d
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+3h
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+3s
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack4.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+4c
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+4d
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+4h
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+4s
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack5.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+5c
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+5d
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+5h
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+5s
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack6.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+6c
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+6d
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+6h
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+6s
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack7.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+7c
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+7d
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+7h
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+7s
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack8.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+8c
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+8d
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+8h
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+8s
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack9.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+9c
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+9d
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+9h
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+9s
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack10.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+ac
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+ad
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+ah
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+as
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack11.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+jc
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+jd
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+jh
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+js
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack12.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+kc
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+kd
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+kh
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+ks
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+
+cards.pack13.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+qc
+  rotate: false
+  xy: 2, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+qd
+  rotate: false
+  xy: 2, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+qh
+  rotate: false
+  xy: 504, 362
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
+qs
+  rotate: false
+  xy: 504, 2
+  size: 500, 358
+  orig: 500, 358
+  offset: 0, 0
+  index: -1
