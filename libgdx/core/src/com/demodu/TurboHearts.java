@@ -1,25 +1,40 @@
 package com.demodu;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class TurboHearts extends Game {
-	SpriteBatch batch;
-	Texture img;
-	
+
+	AssetManager manager;
+	SpriteBatch spriteBatch;
+	OrthographicCamera camera;
+
 	@Override
 	public void create () {
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, 800, 480);
+		spriteBatch = new SpriteBatch();
+		spriteBatch.setProjectionMatrix(camera.combined);
+		manager = new AssetManager();
+		Assets.stage(manager);
+		Assets.load(manager);
+
+		setScreen(new TurboHeartsGame(this));
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		batch.begin();
-		batch.draw(img, 0, 0);
-		batch.end();
+		super.render();
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		double aspectRatio = (double)width / height;
+		camera.setToOrtho(false, (float)(480f * aspectRatio), 480);
+
+		super.resize((int)(480f * aspectRatio), 480);
+		spriteBatch.setProjectionMatrix(camera.combined);
 	}
 }
