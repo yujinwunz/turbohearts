@@ -7,5 +7,9 @@ import java.util.List;
  */
 
 public interface PlayerActor {
-	List<Card> getMove(ClientGameView clientGameView, MoveReporter reporter);
+	void getMove(ClientGameView clientGameView, MoveReporter reporter);
+
+	void reportPlay(GameState.PlayerPosition position, Card card);
+	void reportPass(GameState.PlayerPosition position, List<Card> card);
+	void reportCharge(GameState.PlayerPosition position, Card card);
 }

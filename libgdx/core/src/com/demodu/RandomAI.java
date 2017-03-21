@@ -29,7 +29,7 @@ public class RandomAI implements PlayerActor {
 	public Random random = new Random();
 
 	@Override
-	public List<Card> getMove(ClientGameView clientGameView, MoveReporter reporter) {
+	public void getMove(ClientGameView clientGameView, MoveReporter reporter) {
 		List<Card> candidates = new ArrayList<Card>();
 		int nToChoose = 1;
 
@@ -120,6 +120,21 @@ public class RandomAI implements PlayerActor {
 		}
 
 		Collections.shuffle(candidates);
-		return candidates.subList(0, nToChoose);
+		reporter.reportMove(candidates.subList(0, nToChoose));
+	}
+
+	@Override
+	public void reportPlay(GameState.PlayerPosition position, Card card) {
+		//pass
+	}
+
+	@Override
+	public void reportPass(GameState.PlayerPosition position, ArrayList<Card> card) {
+		//pass
+	}
+
+	@Override
+	public void reportCharge(GameState.PlayerPosition position, Card card) {
+		//pass
 	}
 }

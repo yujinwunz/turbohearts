@@ -31,6 +31,7 @@ public class Card {
 	public static final Card JACK_OF_DIAMONDS = new Card(Rank.JACK, Suit.DIAMOND);
 	public static final Card TEN_OF_CLUBS = new Card(Rank.TEN, Suit.CLUB);
 	public static final Card ACE_OF_HEARTS = new Card(Rank.ACE, Suit.HEART);
+	public static final Card TWO_OF_CLUBS = new Card(Rank.TWO, Suit.CLUB);
 
 	public static UnmodifiableArrayList<Card> getDeck() {
 		return deck;
