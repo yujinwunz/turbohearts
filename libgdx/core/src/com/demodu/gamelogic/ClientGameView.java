@@ -15,6 +15,8 @@ public class ClientGameView {
 	ArrayList<Card> table;
 	ArrayList<Card> hand;
 
+	ArrayList<Card> legalPlays;
+
 	boolean heartsBroken;
 
 	ArrayList<Card> chargedCards;
@@ -22,7 +24,7 @@ public class ClientGameView {
 
 
 	public ClientGameView(ArrayList<Card> table, ArrayList<Card> hand, GameState.Phase gamePhase,
-						  GameState.Round gameRound, boolean heartsBroken,
+						  GameState.Round gameRound, boolean heartsBroken, List<Card> legalPlays,
 						  ArrayList<Card> chargedCards, ArrayList<Card.Suit> playedSuits
 	) {
 		this.table = new ArrayList<Card>(table);
@@ -30,6 +32,7 @@ public class ClientGameView {
 		this.gamePhase = gamePhase;
 		this.gameRound = gameRound;
 		this.heartsBroken = heartsBroken;
+		this.legalPlays = new ArrayList<Card>(legalPlays);
 		this.chargedCards = new ArrayList<Card>(chargedCards);
 		this.playedSuits = new ArrayList<Card.Suit>(playedSuits);
 	}
@@ -44,6 +47,10 @@ public class ClientGameView {
 
 	public boolean isHeartsBroken() {
 		return heartsBroken;
+	}
+
+	public ArrayList<Card> getLegalPlays() {
+		return legalPlays;
 	}
 
 	public ArrayList<Card> getChargedCards() {

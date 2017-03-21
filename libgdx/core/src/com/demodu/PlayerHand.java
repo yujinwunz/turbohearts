@@ -124,6 +124,7 @@ public class PlayerHand implements InputProcessor {
 
 	public void removeCard(Card c) {
 		cards.remove(c);
+		reposition();
 	}
 
 	public List<GdxCard> getUnmodifiableCards() {

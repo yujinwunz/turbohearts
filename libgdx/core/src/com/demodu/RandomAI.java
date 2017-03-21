@@ -51,69 +51,7 @@ public class RandomAI implements PlayerActor {
 				break;
 			case FirstRound:
 			case Playing:
-				if (clientGameView.getTable().size() == 0) {
-					// Leading.
-					if (clientGameView.getGamePhase() == GameState.Phase.FirstRound) {
-						candidates.add(new Card(Card.Rank.TWO, Card.Suit.CLUB));
-					} else {
-						List<Card> charged = new ArrayList<Card>();
-						List<Card> hearts = new ArrayList<Card>();
-						List<Card> chargedHeart = new ArrayList<Card>();
-
-						for (Card c : clientGameView.getHand()) {
-							if (clientGameView.getChargedCards().contains(c)) {
-								if (clientGameView.getPlayedSuits().contains(c.getSuit())) {
-									candidates.add(c);
-								} else {
-									if (c.getSuit() == Card.Suit.HEART && !clientGameView.isHeartsBroken()) {
-										chargedHeart.add(c);
-									} else {
-										charged.add(c);
-									}
-								}
-							} else if (c.getSuit() == Card.Suit.HEART && clientGameView.isHeartsBroken() == false) {
-								hearts.add(c);
-							} else {
-								candidates.add(c);
-							}
-						}
-						if (candidates.size() == 0) {
-							candidates = charged;
-						}
-						if (candidates.size() == 0) {
-							candidates = charged;
-						}
-						if (candidates.size() == 0) {
-							candidates = charged;
-						}
-					}
-				} else {
-					// Following
-					List<Card> suitedCharged = new ArrayList<Card>();
-					List<Card> offSuit = new ArrayList<Card>();
-
-					Card firstCard = clientGameView.getTable().get(0);
-					for (Card c : clientGameView.getHand()) {
-						if (c.getSuit() != firstCard.getSuit()) {
-							// On the first round, hearts and QoS cannot be played.
-							if (clientGameView.getGamePhase() != GameState.Phase.FirstRound
-									|| (c.getSuit() != Card.Suit.HEART
-										&& !c.equals(Card.QUEEN_OF_SPADES))) {
-								offSuit.add(c);
-							}
-						} else if (clientGameView.getChargedCards().contains(c)) {
-							suitedCharged.add(c);
-						} else {
-							// Suited, uncharged.
-							candidates.add(c);
-						}
-					}
-					if (candidates.size() == 0) { candidates = suitedCharged; }
-					if (candidates.size() == 0) { candidates = offSuit; }
-					// Rare, first round where player only has hearts and queen of spades.
-					if (candidates.size() == 0) { candidates = clientGameView.getHand(); }
-				}
-
+				candidates = clientGameView.getLegalPlays();
 				break;
 			case Finished:
 				break;

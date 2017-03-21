@@ -1,6 +1,8 @@
 package com.demodu.gamelogic;
 
 
+import com.badlogic.gdx.Gdx;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -85,6 +87,7 @@ public class GameState {
 				phase,
 				round,
 				heartsBroken,
+				phase == Playing || phase == FirstRound ? getCurrentPlayerLegalMoves() : Collections.EMPTY_LIST,
 				chargedCards,
 				playedSuits
 		);
@@ -222,10 +225,12 @@ public class GameState {
 	}
 
 	private void stepPlaying() {
+		Gdx.app.log("GameState", "Playing. Current playing: " + currentPlayer);
 		if (players[currentPlayer].hand.size() == 0) {
 			// Game has ended.
 			endTrick();
 			endGame();
+			Gdx.app.log("GameState", "Game has ended");
 			return;
 		} else {
 			if (table.size() == 8 ||
@@ -241,7 +246,7 @@ public class GameState {
 				assert(move.size() == 1);
 				assert(players[currentPlayer].hand.contains(move.get(0)));
 
-				// TODO: verify it's a valid play.
+				assert(getCurrentPlayerLegalMoves().contains(move.get(0)));
 
 				// Report play.
 				for (PlayerPosition pos : PlayerPosition.values()) {
@@ -252,17 +257,19 @@ public class GameState {
 					}
 				}
 
+				if (move.get(0).getSuit() == Card.Suit.HEART) {
+					heartsBroken = true;
+				}
 				players[currentPlayer].hand.remove(move.get(0));
 				table.addAll(move);
 				currentPlayer = (currentPlayer + 1)%4;
 				stepPlaying();
 			}
 		});
-		currentPlayer = (currentPlayer + 1) % 4;
-
 	}
 
 	private void endTrick() {
+		Gdx.app.log("GameState", "Trick has ended");
 		Card.Suit leadingSuit = table.get(0).getSuit();
 		// Because there's always 4 or 8 cards per trick, we know that
 		// the currentPlayer is also the leader of the trick.
@@ -312,6 +319,75 @@ public class GameState {
 
 		// Any more games happening?
 		start();
+	}
+
+	/**
+	 * In playing mode, returns legal moves for leading and following plays.
+	 * Not valid for passing or charging turns.
+	 */
+	private List<Card> getCurrentPlayerLegalMoves() {
+		List<Card> candidates = new ArrayList<Card>();
+		if (table.size() == 0) {
+			// Leading.
+			if (phase == GameState.Phase.FirstRound) {
+				return Collections.singletonList(Card.TWO_OF_CLUBS);
+			} else {
+				List<Card> charged = new ArrayList<Card>();
+				List<Card> hearts = new ArrayList<Card>();
+				List<Card> chargedHeart = new ArrayList<Card>();
+
+				for (Card c : players[currentPlayer].hand) {
+					if (chargedCards.contains(c)) {
+						if (playedSuits.contains(c.getSuit())) {
+							candidates.add(c);
+						} else {
+							if (c.getSuit() == Card.Suit.HEART && !heartsBroken) {
+								chargedHeart.add(c);
+							} else {
+								charged.add(c);
+							}
+						}
+					} else if (c.getSuit() == Card.Suit.HEART && !heartsBroken) {
+						hearts.add(c);
+					} else {
+						candidates.add(c);
+					}
+				}
+				if (candidates.size() != 0) return candidates;
+				if (charged.size() != 0) return charged;
+				if (hearts.size() != 0) return hearts;
+				assert(false);
+				return chargedHeart; // This shouldn't be possible.
+			}
+		} else {
+			// Following
+			List<Card> suitedCharged = new ArrayList<Card>();
+			List<Card> offSuit = new ArrayList<Card>();
+
+			Card firstCard = table.get(0);
+			for (Card c : players[currentPlayer].hand) {
+				if (c.getSuit() != firstCard.getSuit()) {
+					// On the first round, hearts and QoS cannot be played.
+					if (phase != GameState.Phase.FirstRound
+							|| (c.getSuit() != Card.Suit.HEART
+							&& !c.equals(Card.QUEEN_OF_SPADES))) {
+						offSuit.add(c);
+					}
+				} else if (chargedCards.contains(c)) {
+					suitedCharged.add(c);
+				} else {
+					// Suited, uncharged.
+					candidates.add(c);
+				}
+			}
+			if (candidates.size() != 0) return candidates;
+			if (suitedCharged.size() != 0) return suitedCharged;
+			if (offSuit.size() != 0) return offSuit;
+			// Rare, first round where player only has hearts and queen of spades.
+			// I cannot find documentation whether the official rules call for
+			// whether any card can be played or if only an uncharged heart can be played.
+			return players[currentPlayer].getHand();
+		}
 	}
 
 	private void clearPlayerStageActions() {

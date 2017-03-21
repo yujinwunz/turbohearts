@@ -93,6 +93,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 						addCards(Collections.singletonList(c));
 						break;
 					case Playing:
+						enterWaiting();
 						moveReporter.reportMove(Collections.singletonList((Card)c));
 						break;
 					default:
@@ -113,7 +114,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 						break;
 					case FirstRound:
 					case Playing:
-						startPlaying();
+						startPlaying(clientGameView.getLegalPlays());
 						break;
 					default:
 						phase = Phase.Waiting;
@@ -260,16 +261,24 @@ public class TurboHeartsGame extends ScreenAdapter {
 			assert(playerHand.getUnmodifiableCards().contains(c));
 			playerHand.removeCard(c);
 		}
-		moveReporter.reportMove(playerMove);
+		ArrayList<Card> thisPlayerMove = new ArrayList<Card>(playerMove);
 		playerMove.clear();
 		enterWaiting();
+		moveReporter.reportMove(thisPlayerMove);
 	}
 
 	private void startCharging() {
 		Gdx.app.log("Game", "UI should start charging");
 		this.phase = Phase.Charging;
 		for (int i = 0; i < playerHand.size(); i++) {
-			playerHand.getCard(i).setState(GdxCard.State.Enabled);
+			if (playerHand.getCard(i).equals(Card.ACE_OF_HEARTS) ||
+					playerHand.getCard(i).equals(Card.QUEEN_OF_SPADES) ||
+					playerHand.getCard(i).equals(Card.JACK_OF_DIAMONDS) ||
+					playerHand.getCard(i).equals(Card.TEN_OF_CLUBS)) {
+				playerHand.getCard(i).setState(GdxCard.State.Enabled);
+			} else {
+				playerHand.getCard(i).setState(GdxCard.State.Disabled);
+			}
 		}
 
 		Table table = new Table();
@@ -284,21 +293,34 @@ public class TurboHeartsGame extends ScreenAdapter {
 			}
 		});
 		table.add(button);
-
-		button.setDisabled(true);
-		passButton = button;
 		stage.addActor(table);
 	}
 
 	private void doCharge() {
+		for (Card c : playerMove) {
+			assert(playerHand.getUnmodifiableCards().contains(c));
+			playerHand.removeCard(c);
+		}
 
+		ArrayList<Card> thisPlayerMove = new ArrayList<Card>(playerMove);
+		playerMove.clear();
+		enterWaiting();
+		moveReporter.reportMove(thisPlayerMove);
 	}
 
-	private void startPlaying() {
-
+	private void startPlaying(List<Card> legalMoves) {
+		this.phase = Phase.Playing;
+		for (int i = 0; i < playerHand.size(); i++) {
+			if (legalMoves.contains(playerHand.getCard(i))) {
+				playerHand.getCard(i).setState(GdxCard.State.Enabled);
+			} else {
+				playerHand.getCard(i).setState(GdxCard.State.Disabled);
+			}
+		}
 	}
 
 	private void enterWaiting() {
+		Gdx.app.log("Game", "Entered waiting");
 		for (int i = 0; i < playerHand.size(); i++) {
 			playerHand.getCard(i).setState(GdxCard.State.Inactive);
 		}

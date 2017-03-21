@@ -113,7 +113,7 @@ public class GdxCard extends Card {
 		if (this.state == State.Disabled) {
 			batch.setColor(new Color(0.5f, 0.5f, 0.5f, 1.5f));
 		} else if (this.state == State.Selected) {
-			batch.setColor(new Color(1.0f, 1.0f, 0.9f, 1.5f));
+			batch.setColor(new Color(1.0f, 1.0f, 0.95f, 1.5f));
 		}
 
 		batch.draw(
