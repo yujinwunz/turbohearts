@@ -14,8 +14,9 @@ public abstract class MoveReporter {
 		if (valid) {
 			valid = false;
 			reportMoveImpl(move);
+		} else {
+			throw new UnsupportedOperationException("Cannot report a move twice.");
 		}
-		throw new UnsupportedOperationException("Cannot report a move twice.");
 	}
 
 	protected abstract void reportMoveImpl(List<Card> move);

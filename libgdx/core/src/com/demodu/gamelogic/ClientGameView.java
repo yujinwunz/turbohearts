@@ -10,6 +10,8 @@ public class ClientGameView {
 	Config gameConfig;
 	GameState.Phase gamePhase;
 
+	GameState.Round gameRound;
+
 	ArrayList<Card> table;
 	ArrayList<Card> hand;
 
@@ -19,11 +21,14 @@ public class ClientGameView {
 	ArrayList<Card.Suit> playedSuits;
 
 
-	public ClientGameView(ArrayList<Card> table, ArrayList<Card> hand, boolean heartsBroken,
+	public ClientGameView(ArrayList<Card> table, ArrayList<Card> hand, GameState.Phase gamePhase,
+						  GameState.Round gameRound, boolean heartsBroken,
 						  ArrayList<Card> chargedCards, ArrayList<Card.Suit> playedSuits
 	) {
 		this.table = new ArrayList<Card>(table);
 		this.hand = new ArrayList<Card>(hand);
+		this.gamePhase = gamePhase;
+		this.gameRound = gameRound;
 		this.heartsBroken = heartsBroken;
 		this.chargedCards = new ArrayList<Card>(chargedCards);
 		this.playedSuits = new ArrayList<Card.Suit>(playedSuits);
@@ -57,4 +62,7 @@ public class ClientGameView {
 		return gamePhase;
 	}
 
+	public GameState.Round getGameRound() {
+		return gameRound;
+	}
 }

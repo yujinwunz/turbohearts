@@ -46,7 +46,7 @@ public class RandomAI implements PlayerActor {
 					if (chargeableCards.contains(c)) {
 						candidates.add(c);
 					}
-					nToChoose = random.nextInt() % candidates.size();
+					nToChoose = Math.abs(random.nextInt()) % (candidates.size() + 1);
 				}
 				break;
 			case FirstRound:
@@ -129,7 +129,7 @@ public class RandomAI implements PlayerActor {
 	}
 
 	@Override
-	public void reportPass(GameState.PlayerPosition position, ArrayList<Card> card) {
+	public void reportPass(GameState.PlayerPosition position, List<Card> cards) {
 		//pass
 	}
 

@@ -28,9 +28,9 @@ public class GameState {
 		assert(actors.length == 4);
 		this.players = new Player[]{
 			new Player(actors[0]),
-			new Player(actors[0]),
-			new Player(actors[0]),
-			new Player(actors[0]),
+			new Player(actors[1]),
+			new Player(actors[2]),
+			new Player(actors[3]),
 		};
 		this.currentPlayer = 0;
 		this.phase = Ready;
@@ -50,6 +50,7 @@ public class GameState {
 
 		for (int i = 0; i < 4; i++) {
 			players[i].setHand(deck.subList(13*i, 13*i+13));
+			players[i].actor.reportPass(PlayerPosition.Self, players[i].hand);
 		}
 
 		startPassing();
@@ -81,6 +82,8 @@ public class GameState {
 		return new ClientGameView(
 				this.table,
 				players[playerIndex].hand,
+				phase,
+				round,
 				heartsBroken,
 				chargedCards,
 				playedSuits
@@ -318,13 +321,6 @@ public class GameState {
 	}
 
 	private static class Player {
-		public Player(PlayerActor actor) {
-			this.actor = actor;
-			this.taken = new ArrayList<Card>();
-			this.pointsTotal = 0;
-			this.actionStage = null;
-		}
-
 		ArrayList<Card> hand;
 		ArrayList<Card> taken;
 		PlayerActor actor;
@@ -332,6 +328,14 @@ public class GameState {
 		// What the current player is trying to play but needs to wait for everyone to finish
 		// (charging, passing)
 		ArrayList<Card> actionStage;
+
+		public Player(PlayerActor actor) {
+			this.actor = actor;
+			this.taken = new ArrayList<Card>();
+			this.pointsTotal = 0;
+			this.actionStage = null;
+			this.hand = new ArrayList<Card>();
+		}
 
 		public List<Card> getHand() {
 			return hand;

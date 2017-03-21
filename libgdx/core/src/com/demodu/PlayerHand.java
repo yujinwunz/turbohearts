@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.demodu.gamelogic.Card;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -26,11 +27,11 @@ public class PlayerHand implements InputProcessor {
 	private Skin skin;
 	private TurboHearts turboHearts;
 
-	private double timeLapsed;
 	private PlayHandler onPlay;
+	private int maxCards;
 
 	public PlayerHand(
-			List<Card> cards,
+			int maxCards,
 			int x,
 			int y,
 			int width,
@@ -44,6 +45,7 @@ public class PlayerHand implements InputProcessor {
 		loadResources();
 
 		this.onPlay = playHandler;
+		this.maxCards = maxCards;
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -54,29 +56,6 @@ public class PlayerHand implements InputProcessor {
 		double cardSpacing = (width - cardWidth) / 13;
 
 		this.cards = new ArrayList<GdxCard>();
-		for (int i = 0; i < cards.size(); i++) {
-			final int index = i;
-			final PlayerHand me = this;
-			final GdxCard newCard = new GdxCard(
-					cards.get(i).getRank(), cards.get(i).getSuit(),
-					(float)(x + cardWidth / 2 + cardSpacing * i),
-					y + height / 2,
-					height,
-					0,
-					turboHearts,
-					GdxCard.State.Inactive
-			);
-			newCard.setOnClick(new Callable() {
-				@Override
-				public Object call() throws Exception {
-					me.cards.remove(newCard);
-					me.onPlay.play(newCard);
-					me.reposition();
-					return null;
-				}
-			});
-			this.cards.add(newCard);
-		}
 	}
 
 	public void loadResources() {
@@ -96,6 +75,24 @@ public class PlayerHand implements InputProcessor {
 		batch.end();
 	}
 
+	public void addCard(int index, final GdxCard c) {
+		cards.add(index, c);
+		c.setOnClick(new Callable() {
+			@Override
+			public Object call() throws Exception {
+				cards.remove(c);
+				onPlay.play(c);
+				reposition();
+				return null;
+			}
+		});
+		reposition();
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
 	private void reposition() {
 		reposition(this.x, this.y, this.width, this.height);
 	}
@@ -109,9 +106,9 @@ public class PlayerHand implements InputProcessor {
 		TextureRegion region = atlas.findRegion(Assets.getCardName(Card.example));
 		double cardAspectRatio = (double)region.getRegionWidth() / region.getRegionHeight();
 		double cardWidth = height * cardAspectRatio;
-		double cardSpacing = (width - cardWidth) / 12;
+		double cardSpacing = (width - cardWidth) / (maxCards - 1);
 
-		double left = x + cardSpacing * (13 - cards.size())/2;
+		double left = x + cardSpacing * (maxCards - cards.size())/2;
 		for (GdxCard c : cards) {
 			c.sendTo((float)(left + cardWidth / 2), y + height / 2, 0);
 			c.height = height;
@@ -119,6 +116,22 @@ public class PlayerHand implements InputProcessor {
 			left += cardSpacing;
 		}
 
+	}
+
+	public GdxCard getCard(int index) {
+		return cards.get(index);
+	}
+
+	public void removeCard(Card c) {
+		cards.remove(c);
+	}
+
+	public List<GdxCard> getUnmodifiableCards() {
+		return Collections.unmodifiableList(cards);
+	}
+
+	public int size() {
+		return cards.size();
 	}
 
 	@Override
@@ -180,6 +193,6 @@ public class PlayerHand implements InputProcessor {
 	}
 
 	public interface PlayHandler {
-		void play(Card c);
+		void play(GdxCard c);
 	}
 }

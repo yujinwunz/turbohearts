@@ -9,6 +9,8 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector3;
 import com.demodu.gamelogic.Card;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashSet;
 
 
@@ -25,7 +27,7 @@ public class GdxCard extends Card {
 	Polygon renderedPolygon;
 	// How much are we pushed up due to being selected?
 	double selectHeight;
-	boolean isSelected;
+	private boolean isTouched;
 	HashSet<Integer> onPointers = new HashSet<Integer>();
 
 	public void setOnClick(Callable onClick) {
@@ -60,7 +62,7 @@ public class GdxCard extends Card {
 		this.animationTarget = null;
 		this.renderedPolygon = null;
 		this.selectHeight = 0;
-		this.isSelected = false;
+		this.isTouched = false;
 		this.state = state;
 		TextureRegion region =
 				atlas.findRegion(Assets.getCardName(Card.example));
@@ -88,7 +90,7 @@ public class GdxCard extends Card {
 			correctAngle();
 		}
 
-		if (this.isSelected) {
+		if (this.isTouched || this.state == State.Selected) {
 			selectHeight = Math.min(
 					height * SELECT_HEIGHT_MAX_RATIO,
 					selectHeight + delta * SELECT_HEIGHT_MAX_RATIO * height / ANIMATION_DURATION * 4
@@ -102,14 +104,16 @@ public class GdxCard extends Card {
 
 		float x = (float)(this.x);
 		float y = (float)(this.y);
-		if (this.state == State.Enabled) {
+		if (this.state == State.Enabled || this.state == State.Selected) {
 			x += Math.sin(a) * selectHeight;
 			y += Math.cos(a) * selectHeight;
 		}
 
 		Color prevColour = batch.getColor();
 		if (this.state == State.Disabled) {
-			batch.setColor(new Color(0.3f, 0.3f, 0.3f, 1.3f));
+			batch.setColor(new Color(0.5f, 0.5f, 0.5f, 1.5f));
+		} else if (this.state == State.Selected) {
+			batch.setColor(new Color(1.0f, 1.0f, 0.9f, 1.5f));
 		}
 
 		batch.draw(
@@ -161,23 +165,28 @@ public class GdxCard extends Card {
 		} else {
 			onPointers.remove(pointer);
 		}
-		this.isSelected = onPointers.size() > 0;
+		this.isTouched = onPointers.size() > 0;
 		return retval;
 	}
 
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		Vector3 actual = turboHearts.camera.unproject(new Vector3(screenX, screenY, 0));
 		this.onPointers.remove(pointer);
-		this.isSelected = onPointers.size() > 0;
+		this.isTouched = onPointers.size() > 0;
 
-		if (this.renderedPolygon.contains(actual.x, actual.y) && !this.isSelected) {
-			try {
-				onClick.call();
-			} catch (Exception e) {
-				Gdx.app.error(
-						"GdxCard", "Error in onclick, \"" + e.getMessage() + "\" trace:\n"
-						+ e.getStackTrace()
-				);
+		if (this.renderedPolygon.contains(actual.x, actual.y) && !this.isTouched) {
+			if (this.state == State.Enabled || this.state == State.Selected) {
+				try {
+					onClick.call();
+				} catch (Exception e) {
+					StringWriter sw = new StringWriter();
+					PrintWriter pw = new PrintWriter(sw);
+					e.printStackTrace(pw);
+					Gdx.app.error(
+							"GdxCard", "Error in onclick, \"" + e.getLocalizedMessage() + "\" trace:\n"
+									+ sw.toString()
+					);
+				}
 			}
 			return true;
 		}
@@ -193,13 +202,13 @@ public class GdxCard extends Card {
 		} else {
 			onPointers.remove(pointer);
 		}
-		this.isSelected = onPointers.size() > 0;
+		this.isTouched = onPointers.size() > 0;
 		return retval;
 	}
 
 	public void touchDraggedOntoAnotherCard(int pointer) {
 		onPointers.remove(pointer);
-		this.isSelected = onPointers.size() > 0;
+		this.isTouched = onPointers.size() > 0;
 	}
 
 
@@ -218,6 +227,8 @@ public class GdxCard extends Card {
 		// Dark and unclickable
 		Disabled,
 		// Bright but unclickable
-		Inactive
+		Inactive,
+		// Selected cards are stood up.
+		Selected
 	}
 }
