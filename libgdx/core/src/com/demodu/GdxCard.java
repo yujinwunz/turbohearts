@@ -221,7 +221,7 @@ public class GdxCard extends Card {
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		Vector3 actual = turboHearts.camera.unproject(new Vector3(screenX, screenY, 0));
 		boolean retval = false;
-		if (this.renderedPolygon.contains(actual.x, actual.y)) {
+		if (this.renderedPolygon != null && this.renderedPolygon.contains(actual.x, actual.y)) {
 			onPointers.add(pointer);
 			retval = true;
 		} else {

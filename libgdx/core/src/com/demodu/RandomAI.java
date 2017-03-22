@@ -77,7 +77,17 @@ public class RandomAI implements PlayerActor {
 	}
 
 	@Override
-	public void reportEvent(GameState.Event event, GameState.PlayerPosition position) {
-		// pass
+	public void reportTrickEnd(GameState.PlayerPosition position) {
+
+	}
+
+	@Override
+	public void reportRoundEnd(int score, int leftScore, int acrossScore, int rightScore) {
+
+	}
+
+	@Override
+	public void reportGameEnd(int score, int leftScore, int acrossScore, int rightScore) {
+
 	}
 }

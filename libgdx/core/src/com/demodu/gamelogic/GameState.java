@@ -47,6 +47,10 @@ public class GameState {
 		this.playedSuits = new ArrayList<Card.Suit>();
 	}
 
+	public ArrayList<Card> getLastTrick() {
+		return lastTrick;
+	}
+
 	public void start() {
 		heartsBroken = false;
 		playedSuits.clear();
@@ -302,7 +306,7 @@ public class GameState {
 		table.clear();
 
 		for (int i = 0; i < 4; i++) {
-			players[i].actor.reportEvent(Event.TrickEnd, PlayerPosition.values()[(winningPlayer - i + 4)%4]);
+			players[i].actor.reportTrickEnd(PlayerPosition.values()[(winningPlayer - i + 4)%4]);
 		}
 	}
 
@@ -310,30 +314,40 @@ public class GameState {
 		for (Player p : players) {
 			int points = 0;
 			boolean hasTenOfClubs = false;
+			int nPointCards = 0;
 			for (Card c : p.taken) {
 				if (c == Card.TEN_OF_CLUBS) {
 					hasTenOfClubs = true;
 				}
 				if (c == Card.QUEEN_OF_SPADES) {
 					points += chargedCards.contains(Card.QUEEN_OF_SPADES) ? 26 : 13;
+					nPointCards += 1;
 				}
 				if (c.getSuit() == Card.Suit.HEART) {
 					points += chargedCards.contains(Card.ACE_OF_HEARTS) ? 2 : 1;
+					nPointCards += 1;
 				}
-				if (c == Card.JACK_OF_DIAMONDS) {
-					points -= chargedCards.contains(Card.JACK_OF_DIAMONDS) ? 20 : 10;
-				}
+			}
+			if (nPointCards == 14) {
+				points *= -1;
+			}
+			if (p.taken.contains(Card.JACK_OF_DIAMONDS)) {
+				points -= chargedCards.contains(Card.JACK_OF_DIAMONDS) ? 20 : 10;
 			}
 			if (hasTenOfClubs) {
 				points *= 2;
 			}
 
-			p.incrementPointsTotal(points);
+			p.appendPoints(points);
 		}
 
-		// Any more games happening?
-		for (Player p: players) {
-			p.actor.reportEvent(Event.RoundEnd, null);
+		for (int i = 0; i < 4; i++) {
+			players[i].actor.reportRoundEnd(
+					players[i].getPoints().get(players[i].getPoints().size()-1),
+					players[(i+1)%4].getPoints().get(players[(i+1)%4].getPoints().size()-1),
+					players[(i+2)%4].getPoints().get(players[(i+2)%4].getPoints().size()-1),
+					players[(i+3)%4].getPoints().get(players[(i+3)%4].getPoints().size()-1)
+			);
 		}
 
 		round = Round.values()[(round.ordinal() + 1)%4];
@@ -419,7 +433,7 @@ public class GameState {
 		ArrayList<Card> hand;
 		ArrayList<Card> taken;
 		PlayerActor actor;
-		private int pointsTotal;
+		ArrayList<Integer> points;
 		// What the current player is trying to play but needs to wait for everyone to finish
 		// (charging, passing)
 		ArrayList<Card> actionStage;
@@ -427,7 +441,7 @@ public class GameState {
 		public Player(PlayerActor actor) {
 			this.actor = actor;
 			this.taken = new ArrayList<Card>();
-			this.pointsTotal = 0;
+			this.points = new ArrayList<Integer>();
 			this.actionStage = null;
 			this.hand = new ArrayList<Card>();
 		}
@@ -453,14 +467,13 @@ public class GameState {
 			return actor;
 		}
 
-		public int getPointsTotal() {
-			return pointsTotal;
+		public List<Integer> getPoints() {
+			return Collections.unmodifiableList(points);
 		}
 
-		public void incrementPointsTotal(int inc) {
-			this.pointsTotal += inc;
+		public void appendPoints(int inc) {
+			points.add(inc);
 		}
-
 	}
 
 	public enum Phase {

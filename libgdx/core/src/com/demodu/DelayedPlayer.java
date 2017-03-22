@@ -14,7 +14,7 @@ import java.util.List;
  * Created by yujinwunz on 22/03/2017.
  */
 
-public abstract class UIDelayedPlayer implements PlayerActor {
+public abstract class DelayedPlayer implements PlayerActor {
 
 	private ArrayList<ScheduleElement> schedule;
 	private float currentTime = 0;
@@ -22,8 +22,9 @@ public abstract class UIDelayedPlayer implements PlayerActor {
 
 	private float cardPlayDelay;
 	private float roundEndDelay;
+	private boolean paused = false;
 
-	public UIDelayedPlayer(float cardPlayDelay, float roundEndDelay) {
+	public DelayedPlayer(float cardPlayDelay, float roundEndDelay) {
 		schedule = new ArrayList<ScheduleElement>();
 		this.cardPlayDelay = cardPlayDelay;
 		this.roundEndDelay = roundEndDelay;
@@ -82,12 +83,36 @@ public abstract class UIDelayedPlayer implements PlayerActor {
 	}
 
 	@Override
-	public void reportEvent(final GameState.Event event, final GameState.PlayerPosition position) {
+	public void reportTrickEnd(final GameState.PlayerPosition position) {
 		endOfQueue += roundEndDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() throws Exception {
-				reportEventImpl(event, position);
+				reportTrickEndImpl(position);
+				return null;
+			}
+		}));
+	}
+
+	@Override
+	public void reportRoundEnd(final int score, final int leftScore, final int acrossScore, final int rightScore) {
+		endOfQueue += roundEndDelay;
+		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
+			@Override
+			public Object call() throws Exception {
+				reportRoundEndImpl(score, leftScore, acrossScore, rightScore);
+				return null;
+			}
+		}));
+	}
+
+	@Override
+	public void reportGameEnd(final int score, final int leftScore, final int acrossScore, final int rightScore) {
+		endOfQueue += roundEndDelay;
+		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
+			@Override
+			public Object call() throws Exception {
+				reportGameEndImpl(score, leftScore, rightScore, acrossScore);
 				return null;
 			}
 		}));
@@ -101,7 +126,11 @@ public abstract class UIDelayedPlayer implements PlayerActor {
 
 	public abstract void reportChargeImpl(GameState.PlayerPosition position, Card card);
 
-	public abstract void reportEventImpl(GameState.Event event, GameState.PlayerPosition position);
+	public abstract void reportTrickEndImpl(GameState.PlayerPosition position);
+
+	public abstract void reportRoundEndImpl(int score, int leftScore, int acrossScore, int rightScore);
+
+	public abstract void reportGameEndImpl(int score, int leftScore, int acrossScore, int rightScore);
 
 	public void incrementTime(float delta) {
 		currentTime += delta;
@@ -110,7 +139,7 @@ public abstract class UIDelayedPlayer implements PlayerActor {
 			try {
 				schedule.get(0).getCallable().call();
 			} catch (Exception e) {
-				Gdx.app.error("UIDelayedPlayer", "error calling callback", e);
+				Gdx.app.error("DelayedPlayer", "error calling callback", e);
 			}
 			schedule.remove(0);
 		}
@@ -134,5 +163,11 @@ public abstract class UIDelayedPlayer implements PlayerActor {
 		}
 	}
 
+	protected void pause() {
+		paused = true;
+	}
 
+	private void resume() {
+		paused = false;
+	}
 }

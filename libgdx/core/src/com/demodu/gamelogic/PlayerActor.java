@@ -12,5 +12,7 @@ public interface PlayerActor {
 	void reportPlay(GameState.PlayerPosition position, Card card);
 	void reportPass(GameState.PlayerPosition position, List<Card> cards);
 	void reportCharge(GameState.PlayerPosition position, Card card);
-	void reportEvent(GameState.Event event, GameState.PlayerPosition position);
+	void reportTrickEnd(GameState.PlayerPosition position);
+	void reportRoundEnd(int score, int leftScore, int acrossScore, int rightScore);
+	void reportGameEnd(int score, int leftScore, int acrossScore, int rightScore);
 }
