@@ -48,6 +48,11 @@ public class GameState {
 	}
 
 	public void start() {
+		heartsBroken = false;
+		playedSuits.clear();
+		chargedCards.clear();
+		lastTrick.clear();
+
 		ArrayList<Card> deck = new ArrayList<Card>(Card.getDeck());
 		Collections.shuffle(deck);
 

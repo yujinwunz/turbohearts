@@ -1,7 +1,9 @@
 package com.demodu.gamelogic;
 
 
-import com.sun.javafx.UnmodifiableArrayList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by yujinwunz on 17/03/2017.
@@ -13,18 +15,17 @@ public class Card {
 	private Rank rank;
 
 	public static Card example = new Card(Rank.QUEEN, Suit.SPADE);
-	private static UnmodifiableArrayList<Card> deck;
+	private static List<Card> deck;
 
 	static {
-		Card[] cards = new Card[52];
+		ArrayList<Card> cards = new ArrayList<Card>();
 		int i = 0;
 		for (Suit s: Suit.values()) {
 			for (Rank r: Rank.values()) {
-				cards[i] = new Card(r, s);
-				i++;
+				cards.add(new Card(r, s));
 			}
 		}
-		deck = new UnmodifiableArrayList<Card>(cards, cards.length);
+		deck = Collections.unmodifiableList(cards);
 	}
 
 	public static final Card QUEEN_OF_SPADES = new Card(Rank.QUEEN, Suit.SPADE);
@@ -33,7 +34,7 @@ public class Card {
 	public static final Card ACE_OF_HEARTS = new Card(Rank.ACE, Suit.HEART);
 	public static final Card TWO_OF_CLUBS = new Card(Rank.TWO, Suit.CLUB);
 
-	public static UnmodifiableArrayList<Card> getDeck() {
+	public static List<Card> getDeck() {
 		return deck;
 	}
 

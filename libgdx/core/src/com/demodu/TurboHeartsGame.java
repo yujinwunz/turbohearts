@@ -39,6 +39,8 @@ public class TurboHeartsGame extends ScreenAdapter {
 	public static float BACKGROUND_COLOUR_G = 0.4f;
 	public static float BACKGROUND_COLOUR_B = 0.15f;
 
+	int width = 800;
+	int height = 480;
 
 	TurboHearts turboHearts;
 	GameState gameState;
@@ -184,8 +186,8 @@ public class TurboHeartsGame extends ScreenAdapter {
 					onTable.add(c);
 				}
 				c.sendTo(
-						(float)(offsetX + Gdx.graphics.getWidth() / 2),
-						(float)(offsetY + Gdx.graphics.getHeight() / 2),
+						(float)(offsetX + width / 2),
+						(float)(offsetY + height / 2),
 						(float)a
 				);
 			}
@@ -220,13 +222,13 @@ public class TurboHeartsGame extends ScreenAdapter {
 						case Self:
 							break;
 						case Left:
-							y = Gdx.graphics.getHeight()/2 - 30 * otherChargedCards.size(); a = (float)Math.PI/2;
+							y = height/2 - 30 * otherChargedCards.size(); a = (float)Math.PI/2;
 							break;
 						case Across:
-							x = Gdx.graphics.getWidth()/2 - 30 * otherChargedCards.size(); y = Gdx.graphics.getHeight();
+							x = width/2 - 30 * otherChargedCards.size(); y = height;
 							break;
 						case Right:
-							y = Gdx.graphics.getHeight()/2 + 30 * otherChargedCards.size(); x = Gdx.graphics.getWidth(); a = (float)Math.PI/2;
+							y = height/2 + 30 * otherChargedCards.size(); x = width; a = (float)Math.PI/2;
 							break;
 					}
 
@@ -311,13 +313,13 @@ public class TurboHeartsGame extends ScreenAdapter {
 	private Vector2 getCoordinatesOfOpponent(GameState.PlayerPosition position) {
 		switch (position) {
 			case Left:
-				return new Vector2(-100, Gdx.graphics.getHeight() / 2);
+				return new Vector2(-100, this.height / 2);
 			case Across:
-				return new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() + 100);
+				return new Vector2(this.width / 2, this.height + 100);
 			case Right:
-				return new Vector2(Gdx.graphics.getWidth() + 100, Gdx.graphics.getHeight() / 2);
+				return new Vector2(this.width + 100, this.height / 2);
 			default:
-				return new Vector2(Gdx.graphics.getWidth()/2, -100);
+				return new Vector2(this.width/2, -100);
 
 		}
 	}
@@ -465,9 +467,10 @@ public class TurboHeartsGame extends ScreenAdapter {
 	public void resize(int width, int height) {
 		this.stage.getViewport().update(width, height, false);
 		double aspectRatio = (double)width / height;
-		int newWidth = (int)(480f * aspectRatio);
-		int newHheight = 480;
-		this.playerHand.reposition(newWidth/8, -50, newWidth*6/8, 140);
+		this.width = (int)(480f * aspectRatio);
+		this.height = 480;
+		this.playerHand.reposition(this.width/8, -50, this.width*6/8, 140);
+		
 	}
 
 	private enum Phase {
