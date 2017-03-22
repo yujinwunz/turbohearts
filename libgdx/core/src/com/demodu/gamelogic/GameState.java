@@ -157,6 +157,7 @@ public class GameState {
 	// and charge in a follow up round.
 	// Up to 4 charging rounds (one for each chargable card) might be played.
 	private void startCharging() {
+		Gdx.app.log("GameState", "Starting to charge");
 		clearPlayerStageActions();
 		this.phase = Charging;
 		for (int i = 0; i < 4; i++) {
@@ -173,6 +174,11 @@ public class GameState {
 								c == Card.TEN_OF_CLUBS);
 						assert(!chargedCards.contains(c));
 					}
+					for (int i = move.size()-1; i >= 0; i--) {
+						if (chargedCards.contains(move.get(i))) {
+							move.remove(i);
+						}
+					}
 					players[fi].actionStage = new ArrayList<Card>(move);
 					// Reporting of charged cards only happen at the end of the
 					// charging round.
@@ -188,7 +194,7 @@ public class GameState {
 		for (Player p: players) {
 			if (p.actionStage == null) {
 				playersReady = false;
-			} else if (p.actionStage.size() > 1) {
+			} else if (p.actionStage.size() >= 1) {
 				chargingFinished = false;
 			}
 		}
@@ -198,7 +204,7 @@ public class GameState {
 				// Report action
 				for (Card c : players[i].getActionStage()) {
 					for (PlayerPosition pos : PlayerPosition.values()) {
-						players[(i + pos.getIndex()) % 4].actor.reportCharge(pos, c);
+						players[(pos.getIndex() - i + 4) % 4].actor.reportCharge(pos, c);
 					}
 				}
 			}
@@ -381,7 +387,7 @@ public class GameState {
 							&& !c.equals(Card.QUEEN_OF_SPADES))) {
 						offSuit.add(c);
 					}
-				} else if (chargedCards.contains(c)) {
+				} else if (chargedCards.contains(c) && !playedSuits.contains(c.getSuit())) {
 					suitedCharged.add(c);
 				} else {
 					// Suited, uncharged.
@@ -393,7 +399,7 @@ public class GameState {
 			if (offSuit.size() != 0) return offSuit;
 			// Rare, first round where player only has hearts and queen of spades.
 			// I cannot find documentation whether the official rules call for
-			// whether any card can be played or if only an uncharged heart can be played.
+			// (any card can be played) or (only an uncharged heart can be played).
 			return players[currentPlayer].getHand();
 		}
 	}

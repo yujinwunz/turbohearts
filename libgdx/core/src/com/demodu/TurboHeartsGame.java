@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.demodu.gamelogic.GameState.PlayerPosition.Self;
+
 /**
  * Created by yujinwunz on 17/03/2017.
  */
@@ -55,7 +57,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 	Skin buttonSkin = new Skin();
 
 	ArrayList<GdxCard> onTable = new ArrayList<GdxCard>();
-	ArrayList<GdxCard> chargedCards = new ArrayList<GdxCard>();
+	ArrayList<GdxCard> otherChargedCards = new ArrayList<GdxCard>();
 	boolean clearTableOnNextPlay = false;
 
 	public TurboHeartsGame(final TurboHearts turboHearts) {
@@ -159,16 +161,22 @@ public class TurboHeartsGame extends ScreenAdapter {
 				}
 				Vector2 from = getCoordinatesOfOpponent(position);
 
-				GdxCard c = new GdxCard(
-						card.getRank(),
-						card.getSuit(),
-						from.x,
-						from.y,
-						playerHand.getHeight(),
-						0,
-						turboHearts,
-						GdxCard.State.Inactive
-				);
+				GdxCard c;
+				if (otherChargedCards.contains(card)) {
+					c = otherChargedCards.get(otherChargedCards.indexOf(card));
+					otherChargedCards.remove(card);
+				} else {
+					c = new GdxCard(
+							card.getRank(),
+							card.getSuit(),
+							from.x,
+							from.y,
+							playerHand.getHeight(),
+							0,
+							turboHearts,
+							GdxCard.State.Inactive
+					);
+				}
 
 				if (onTable.size() >= 4){
 					onTable.add(0, c);
@@ -206,7 +214,35 @@ public class TurboHeartsGame extends ScreenAdapter {
 
 			@Override
 			public void reportChargeImpl(GameState.PlayerPosition position, Card card) {
+				if (position != Self) {
+					float x = 0, y = 0, a = 0;
+					switch (position) {
+						case Self:
+							break;
+						case Left:
+							y = Gdx.graphics.getHeight()/2 - 30 * otherChargedCards.size(); a = (float)Math.PI/2;
+							break;
+						case Across:
+							x = Gdx.graphics.getWidth()/2 - 30 * otherChargedCards.size(); y = Gdx.graphics.getHeight();
+							break;
+						case Right:
+							y = Gdx.graphics.getHeight()/2 + 30 * otherChargedCards.size(); x = Gdx.graphics.getWidth(); a = (float)Math.PI/2;
+							break;
+					}
 
+
+					otherChargedCards.add(new GdxCard(
+							card.getRank(),
+							card.getSuit(),
+							x, y,
+							playerHand.getHeight(),
+							a,
+							turboHearts,
+							GdxCard.State.Inactive
+							)
+					);
+					otherChargedCards.get(otherChargedCards.size()-1).setCharged(true);
+				}
 			}
 
 			@Override
@@ -222,7 +258,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 						break;
 					case RoundEnd:
 						onTable.clear();
-						chargedCards.clear();
+						otherChargedCards.clear();
 						break;
 					case GameEnd:
 						break;
@@ -350,7 +386,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 					playerHand.getCard(i).equals(Card.QUEEN_OF_SPADES) ||
 					playerHand.getCard(i).equals(Card.JACK_OF_DIAMONDS) ||
 					playerHand.getCard(i).equals(Card.TEN_OF_CLUBS))
-					&& !chargedCards.contains(playerHand.getCard(i))) {
+					&& !otherChargedCards.contains(playerHand.getCard(i))) {
 				playerHand.getCard(i).setState(GdxCard.State.Enabled);
 			} else {
 				playerHand.getCard(i).setState(GdxCard.State.Disabled);
@@ -378,7 +414,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 			int i = playerHand.getUnmodifiableCards().indexOf(c);
 			playerHand.getCard(i).setCharged(true);
 			playerHand.getCard(i).setSelected(false);
-			chargedCards.add(playerHand.getCard(i));
+			//otherChargedCards.add(playerHand.getCard(i));
 		}
 
 		ArrayList<Card> thisPlayerMove = new ArrayList<Card>(playerMove);
@@ -416,6 +452,9 @@ public class TurboHeartsGame extends ScreenAdapter {
 		stage.draw();
 		turboHearts.spriteBatch.begin();
 		for (GdxCard c : onTable) {
+			c.render(delta, turboHearts.spriteBatch);
+		}
+		for (GdxCard c : otherChargedCards) {
 			c.render(delta, turboHearts.spriteBatch);
 		}
 		turboHearts.spriteBatch.end();
