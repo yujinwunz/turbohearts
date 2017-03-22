@@ -31,10 +31,10 @@ public class TurboHearts extends Game {
 
 	@Override
 	public void resize(int width, int height) {
+		super.resize(width, height);
 		double aspectRatio = (double)width / height;
 		camera.setToOrtho(false, (float)(480f * aspectRatio), 480);
 
-		super.resize((int)(480f * aspectRatio), 480);
 		spriteBatch.setProjectionMatrix(camera.combined);
 	}
 }

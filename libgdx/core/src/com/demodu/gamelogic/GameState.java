@@ -12,6 +12,7 @@ import static com.demodu.gamelogic.GameState.Phase.FirstRound;
 import static com.demodu.gamelogic.GameState.Phase.Passing;
 import static com.demodu.gamelogic.GameState.Phase.Playing;
 import static com.demodu.gamelogic.GameState.Phase.Ready;
+import static com.demodu.gamelogic.GameState.Round.Left;
 
 public class GameState {
 	private Player[] players;
@@ -39,7 +40,7 @@ public class GameState {
 		this.table = new ArrayList<Card>();
 		this.lastTrick = new ArrayList<Card>();
 		this.config = config;
-		this.round = Round.Left;
+		this.round = Left;
 
 		this.heartsBroken = false;
 		this.chargedCards = new ArrayList<Card>();
@@ -97,8 +98,7 @@ public class GameState {
 		clearPlayerStageActions();
 		this.phase = Passing;
 		if (this.round == Round.NoPass) {
-			this.phase = Phase.Charging;
-			step();
+			startCharging();
 		} else {
 			for (int i = 0; i < 4; i++) {
 				final int fi = i;
@@ -198,9 +198,7 @@ public class GameState {
 				// Report action
 				for (Card c : players[i].getActionStage()) {
 					for (PlayerPosition pos : PlayerPosition.values()) {
-						if (pos != PlayerPosition.Self) {
-							players[(i + pos.getIndex()) % 4].actor.reportCharge(pos, c);
-						}
+						players[(i + pos.getIndex()) % 4].actor.reportCharge(pos, c);
 					}
 				}
 			}
@@ -229,12 +227,12 @@ public class GameState {
 		if (players[currentPlayer].hand.size() == 0) {
 			// Game has ended.
 			endTrick();
-			endGame();
-			Gdx.app.log("GameState", "Game has ended");
+			endRound();
+			Gdx.app.log("GameState", "Round has ended");
 			return;
 		} else {
 			if (table.size() == 8 ||
-					table.size() == 4 && (table.contains(new Card(Card.Rank.NINE, table.get(0).getSuit())))) {
+					table.size() == 4 && (!table.contains(new Card(Card.Rank.NINE, table.get(0).getSuit())))) {
 				// Trick ended
 				endTrick();
 			}
@@ -250,11 +248,9 @@ public class GameState {
 
 				// Report play.
 				for (PlayerPosition pos : PlayerPosition.values()) {
-					if (pos != PlayerPosition.Self) {
-						players[(currentPlayer + pos.getIndex())%4].actor.reportPlay(
-								pos, move.get(0)
-						);
-					}
+					players[(currentPlayer - pos.getIndex()+4)%4].actor.reportPlay(
+							pos, move.get(0)
+					);
 				}
 
 				if (move.get(0).getSuit() == Card.Suit.HEART) {
@@ -271,6 +267,9 @@ public class GameState {
 	private void endTrick() {
 		Gdx.app.log("GameState", "Trick has ended");
 		Card.Suit leadingSuit = table.get(0).getSuit();
+		if (!playedSuits.contains(leadingSuit)) {
+			playedSuits.add(leadingSuit);
+		}
 		// Because there's always 4 or 8 cards per trick, we know that
 		// the currentPlayer is also the leader of the trick.
 		int winningPlayer = currentPlayer;
@@ -290,9 +289,13 @@ public class GameState {
 		players[winningPlayer].taken.addAll(table);
 		currentPlayer = winningPlayer;
 		table.clear();
+
+		for (int i = 0; i < 4; i++) {
+			players[i].actor.reportEvent(Event.TrickEnd, PlayerPosition.values()[(winningPlayer - i + 4)%4]);
+		}
 	}
 
-	private void endGame() {
+	private void endRound() {
 		for (Player p : players) {
 			int points = 0;
 			boolean hasTenOfClubs = false;
@@ -318,6 +321,11 @@ public class GameState {
 		}
 
 		// Any more games happening?
+		for (Player p: players) {
+			p.actor.reportEvent(Event.RoundEnd, null);
+		}
+
+		round = Round.values()[(round.ordinal() + 1)%4];
 		start();
 	}
 
@@ -467,8 +475,14 @@ public class GameState {
 		}
 	}
 
+	public enum Event {
+		TrickEnd,
+		RoundEnd,
+		GameEnd
+	}
+
 	public enum PlayerPosition {
-		Left(1), Across(2), Right(3), Self(0);
+		Self(0), Left(1), Across(2), Right(3);
 
 		private int index;
 
@@ -500,11 +514,11 @@ public class GameState {
 				case Left:
 					return Right;
 				case Across:
-					return Self;
+					return Across;
 				case Right:
 					return Left;
 				case NoPass:
-					return Across;
+					return Self;
 				default:
 					throw new IllegalArgumentException();
 			}

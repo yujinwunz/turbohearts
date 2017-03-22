@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.demodu.gamelogic.Card;
 import com.demodu.gamelogic.ClientGameView;
 import com.demodu.gamelogic.Config;
@@ -43,6 +44,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 	MoveReporter moveReporter;
 	ArrayList<Card> playerMove;
 	PlayerHand playerHand;
+	UIDelayedPlayer player;
 
 	Phase phase;
 	Stage stage;
@@ -53,12 +55,14 @@ public class TurboHeartsGame extends ScreenAdapter {
 	Skin buttonSkin = new Skin();
 
 	ArrayList<GdxCard> onTable = new ArrayList<GdxCard>();
+	ArrayList<GdxCard> chargedCards = new ArrayList<GdxCard>();
+	boolean clearTableOnNextPlay = false;
 
 	public TurboHeartsGame(final TurboHearts turboHearts) {
 		this.turboHearts = turboHearts;
 		this.phase = Phase.Waiting;
 		this.playerMove = new ArrayList<Card>();
-		this.stage = new Stage();
+		this.stage = new Stage(new StretchViewport(800, 480));
 		this.inputProcessor = new InputMultiplexer();
 
 		/* For now I'm just doing singleplayer. */
@@ -71,13 +75,13 @@ public class TurboHeartsGame extends ScreenAdapter {
 				switch (phase) {
 					case Passing:
 					case Charging:
-						if (c.getState() == GdxCard.State.Selected) {
-							c.setState(GdxCard.State.Enabled);
+						if (c.isSelected()) {
+							c.setSelected(false);
 							playerMove.remove(c);
 						} else {
 							// Can't pass more than 3 cards
 							if (phase != Phase.Passing || playerMove.size() < 3) {
-								c.setState(GdxCard.State.Selected);
+								c.setSelected(true);
 								playerMove.add(c);
 							}
 						}
@@ -102,9 +106,13 @@ public class TurboHeartsGame extends ScreenAdapter {
 			}
 		});
 
-		players[0] = new PlayerActor() {
+		players[0] = player = new UIDelayedPlayer(0.25f, 1.0f) {
 			@Override
-			public void getMove(ClientGameView clientGameView, MoveReporter reporter) {
+			public void getMoveImpl(ClientGameView clientGameView, MoveReporter reporter) {
+				if (clearTableOnNextPlay) {
+					onTable.clear();
+					clearTableOnNextPlay = false;
+				}
 				switch (clientGameView.getGamePhase()) {
 					case Passing:
 						startPassing(clientGameView.getGameRound());
@@ -124,12 +132,58 @@ public class TurboHeartsGame extends ScreenAdapter {
 			}
 
 			@Override
-			public void reportPlay(GameState.PlayerPosition position, Card card) {
+			public void reportPlayImpl(GameState.PlayerPosition position, Card card) {
+				if (clearTableOnNextPlay) {
+					onTable.clear();
+					clearTableOnNextPlay = false;
+				}
+				double offsetX = 0, offsetY = 0, a = 0;
+				switch (position) {
+					case Left:
+						offsetX = -50; a = Math.PI/2;
+						break;
+					case Across:
+						offsetY = 50;
+						break;
+					case Right:
+						offsetX = 50; a = Math.PI*3/2;
+						break;
+					case Self:
+						offsetY = -50;
+					default:
+						break;
+				}
+				if (onTable.size() >= 4) {
+					offsetX *= 1.7;
+					offsetY *= 1.7;
+				}
+				Vector2 from = getCoordinatesOfOpponent(position);
 
+				GdxCard c = new GdxCard(
+						card.getRank(),
+						card.getSuit(),
+						from.x,
+						from.y,
+						playerHand.getHeight(),
+						0,
+						turboHearts,
+						GdxCard.State.Inactive
+				);
+
+				if (onTable.size() >= 4){
+					onTable.add(0, c);
+				} else {
+					onTable.add(c);
+				}
+				c.sendTo(
+						(float)(offsetX + Gdx.graphics.getWidth() / 2),
+						(float)(offsetY + Gdx.graphics.getHeight() / 2),
+						(float)a
+				);
 			}
 
 			@Override
-			public void reportPass(GameState.PlayerPosition position, List<Card> cards) {
+			public void reportPassImpl(GameState.PlayerPosition position, List<Card> cards) {
 				Vector2 from = getCoordinatesOfOpponent(position);
 				ArrayList<GdxCard> newCards = new ArrayList<GdxCard>();
 
@@ -151,8 +205,28 @@ public class TurboHeartsGame extends ScreenAdapter {
 			}
 
 			@Override
-			public void reportCharge(GameState.PlayerPosition position, Card card) {
+			public void reportChargeImpl(GameState.PlayerPosition position, Card card) {
 
+			}
+
+			@Override
+			public void reportEventImpl(GameState.Event event, GameState.PlayerPosition position) {
+				switch (event) {
+					case TrickEnd:
+						Vector2 flyTo = getCoordinatesOfOpponent(position);
+						for (GdxCard c : onTable) {
+							c.sendTo(flyTo.x, flyTo.y, (float)c.a);
+						}
+						// We'll remove the cards after they finish animating, ie on the next play.
+						clearTableOnNextPlay = true;
+						break;
+					case RoundEnd:
+						onTable.clear();
+						chargedCards.clear();
+						break;
+					case GameEnd:
+						break;
+				}
 			}
 		};
 
@@ -201,13 +275,13 @@ public class TurboHeartsGame extends ScreenAdapter {
 	private Vector2 getCoordinatesOfOpponent(GameState.PlayerPosition position) {
 		switch (position) {
 			case Left:
-				return new Vector2(0, Gdx.graphics.getHeight() / 2);
+				return new Vector2(-100, Gdx.graphics.getHeight() / 2);
 			case Across:
-				return new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight());
+				return new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() + 100);
 			case Right:
-				return new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight() / 2);
+				return new Vector2(Gdx.graphics.getWidth() + 100, Gdx.graphics.getHeight() / 2);
 			default:
-				return new Vector2(Gdx.graphics.getWidth()/2, 0);
+				return new Vector2(Gdx.graphics.getWidth()/2, -100);
 
 		}
 	}
@@ -232,6 +306,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 	}
 
 	private void startPassing(GameState.Round passDirection) {
+		Gdx.app.log("TurboHeartsGame", "startPassing");
 		this.phase = Phase.Passing;
 		for (int i = 0; i < playerHand.size(); i++) {
 			playerHand.getCard(i).setState(GdxCard.State.Enabled);
@@ -271,10 +346,11 @@ public class TurboHeartsGame extends ScreenAdapter {
 		Gdx.app.log("Game", "UI should start charging");
 		this.phase = Phase.Charging;
 		for (int i = 0; i < playerHand.size(); i++) {
-			if (playerHand.getCard(i).equals(Card.ACE_OF_HEARTS) ||
+			if ((playerHand.getCard(i).equals(Card.ACE_OF_HEARTS) ||
 					playerHand.getCard(i).equals(Card.QUEEN_OF_SPADES) ||
 					playerHand.getCard(i).equals(Card.JACK_OF_DIAMONDS) ||
-					playerHand.getCard(i).equals(Card.TEN_OF_CLUBS)) {
+					playerHand.getCard(i).equals(Card.TEN_OF_CLUBS))
+					&& !chargedCards.contains(playerHand.getCard(i))) {
 				playerHand.getCard(i).setState(GdxCard.State.Enabled);
 			} else {
 				playerHand.getCard(i).setState(GdxCard.State.Disabled);
@@ -299,7 +375,10 @@ public class TurboHeartsGame extends ScreenAdapter {
 	private void doCharge() {
 		for (Card c : playerMove) {
 			assert(playerHand.getUnmodifiableCards().contains(c));
-			playerHand.removeCard(c);
+			int i = playerHand.getUnmodifiableCards().indexOf(c);
+			playerHand.getCard(i).setCharged(true);
+			playerHand.getCard(i).setSelected(false);
+			chargedCards.add(playerHand.getCard(i));
 		}
 
 		ArrayList<Card> thisPlayerMove = new ArrayList<Card>(playerMove);
@@ -335,12 +414,21 @@ public class TurboHeartsGame extends ScreenAdapter {
 		this.playerHand.render(delta, turboHearts.spriteBatch);
 		stage.act();
 		stage.draw();
+		turboHearts.spriteBatch.begin();
+		for (GdxCard c : onTable) {
+			c.render(delta, turboHearts.spriteBatch);
+		}
+		turboHearts.spriteBatch.end();
+		player.incrementTime(delta);
 	}
 
 	@Override
 	public void resize(int width, int height) {
-		this.playerHand.reposition(width/8, -50, width*6/8, 140);
-		this.stage.getViewport().update(width, height, true);
+		this.stage.getViewport().update(width, height, false);
+		double aspectRatio = (double)width / height;
+		int newWidth = (int)(480f * aspectRatio);
+		int newHheight = 480;
+		this.playerHand.reposition(newWidth/8, -50, newWidth*6/8, 140);
 	}
 
 	private enum Phase {

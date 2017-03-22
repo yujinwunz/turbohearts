@@ -75,4 +75,9 @@ public class RandomAI implements PlayerActor {
 	public void reportCharge(GameState.PlayerPosition position, Card card) {
 		//pass
 	}
+
+	@Override
+	public void reportEvent(GameState.Event event, GameState.PlayerPosition position) {
+		// pass
+	}
 }

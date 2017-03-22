@@ -47,6 +47,26 @@ public class GdxCard extends Card {
 
 	private State state;
 
+	private boolean selected;
+	private boolean charged;
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
+
+	public boolean isCharged() {
+		return charged;
+	}
+
+	public void setCharged(boolean charged) {
+		this.charged = charged;
+	}
+
+
 	public GdxCard(Rank rank, Suit suit,
 				   float x, float y, float height, float a,
 				   TurboHearts turboHearts,
@@ -90,7 +110,7 @@ public class GdxCard extends Card {
 			correctAngle();
 		}
 
-		if (this.isTouched || this.state == State.Selected) {
+		if (this.isTouched || selected) {
 			selectHeight = Math.min(
 					height * SELECT_HEIGHT_MAX_RATIO,
 					selectHeight + delta * SELECT_HEIGHT_MAX_RATIO * height / ANIMATION_DURATION * 4
@@ -104,16 +124,21 @@ public class GdxCard extends Card {
 
 		float x = (float)(this.x);
 		float y = (float)(this.y);
-		if (this.state == State.Enabled || this.state == State.Selected) {
+		if (this.state == State.Enabled || selected) {
 			x += Math.sin(a) * selectHeight;
 			y += Math.cos(a) * selectHeight;
 		}
 
 		Color prevColour = batch.getColor();
 		if (this.state == State.Disabled) {
-			batch.setColor(new Color(0.5f, 0.5f, 0.5f, 1.5f));
-		} else if (this.state == State.Selected) {
-			batch.setColor(new Color(1.0f, 1.0f, 0.95f, 1.5f));
+			batch.setColor(new Color(0.5f, 0.5f, 0.5f, 1));
+		} else if (selected) {
+			batch.setColor(new Color(1.0f, 1.0f, 0.90f, 1));
+		}
+		if (charged && this.state == State.Disabled) {
+			batch.setColor(new Color(0.5f, 0.4f, 0.3f, 1));
+		} else if (charged) {
+			batch.setColor(new Color(1.0f, 0.9f, 0.80f, 1));
 		}
 
 		batch.draw(
@@ -175,7 +200,7 @@ public class GdxCard extends Card {
 		this.isTouched = onPointers.size() > 0;
 
 		if (this.renderedPolygon.contains(actual.x, actual.y) && !this.isTouched) {
-			if (this.state == State.Enabled || this.state == State.Selected) {
+			if (this.state == State.Enabled || selected) {
 				try {
 					onClick.call();
 				} catch (Exception e) {
@@ -227,8 +252,6 @@ public class GdxCard extends Card {
 		// Dark and unclickable
 		Disabled,
 		// Bright but unclickable
-		Inactive,
-		// Selected cards are stood up.
-		Selected
+		Inactive
 	}
 }
