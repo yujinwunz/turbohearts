@@ -66,6 +66,11 @@ public abstract class DelayedPlayer implements PlayerActor {
 				return null;
 			}
 		}));
+
+		// Add a delay when we receive cards from the opponent
+		if (position != GameState.PlayerPosition.Self) {
+			endOfQueue += roundEndDelay;
+		}
 	}
 
 	@Override

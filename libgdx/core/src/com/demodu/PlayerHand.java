@@ -80,9 +80,7 @@ public class PlayerHand implements InputProcessor {
 		c.setOnClick(new Callable() {
 			@Override
 			public Object call() throws Exception {
-				cards.remove(c);
 				onPlay.play(c);
-				reposition();
 				return null;
 			}
 		});
@@ -91,6 +89,16 @@ public class PlayerHand implements InputProcessor {
 
 	public int getHeight() {
 		return height;
+	}
+
+	public GdxCard removeCard(Card c) {
+		GdxCard retval = cards.remove(cards.indexOf(c));
+		reposition();
+		return retval;
+	}
+
+	public GdxCard findCard(Card c) {
+		return cards.get(cards.indexOf(c));
 	}
 
 	private void reposition() {
@@ -120,11 +128,6 @@ public class PlayerHand implements InputProcessor {
 
 	public GdxCard getCard(int index) {
 		return cards.get(index);
-	}
-
-	public void removeCard(Card c) {
-		cards.remove(c);
-		reposition();
 	}
 
 	public List<GdxCard> getUnmodifiableCards() {

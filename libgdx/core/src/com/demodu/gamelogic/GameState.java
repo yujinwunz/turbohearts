@@ -159,52 +159,79 @@ public class GameState {
 		}
 	}
 
+	private void startCharging() {
+		startCharging(true, true, true, true);
+	}
+
 	// Charging works like this:
 	// Players each independently decide to charge their cards.
 	// If no-one charges any new cards, the charging phase is over.
 	// If a card is charged, players have the opportunity to react
 	// and charge in a follow up round.
 	// Up to 4 charging rounds (one for each chargable card) might be played.
-	private void startCharging() {
+	private void startCharging(boolean... shouldCharge) {
+		assert (shouldCharge.length == 4);
 		Gdx.app.log("GameState", "Starting to charge");
 		clearPlayerStageActions();
 		this.phase = Charging;
+		boolean hasOfferedToCharge = false;
 		for (int i = 0; i < 4; i++) {
-			final int fi = i;
-			players[i].actionStage = null;
-			players[i].actor.getMove(makeClientView(i), new MoveReporter() {
-				@Override
-				protected void reportMoveImpl(List<Card> move) {
-					for (Card c : move) {
-						assert(players[fi].hand.contains(c));
-						assert(c == Card.ACE_OF_HEARTS ||
-								c == Card.QUEEN_OF_SPADES ||
-								c == Card.JACK_OF_DIAMONDS ||
-								c == Card.TEN_OF_CLUBS);
-						assert(!chargedCards.contains(c));
-					}
-					for (int i = move.size()-1; i >= 0; i--) {
-						if (chargedCards.contains(move.get(i))) {
-							move.remove(i);
-						}
-					}
-					players[fi].actionStage = new ArrayList<Card>(move);
-					// Reporting of charged cards only happen at the end of the
-					// charging round.
-					stepCharging();
+			boolean hasChargableCard = false;
+			for (Card c: Card.getChargableCards()) {
+				if (players[i].hand.contains(c) && !chargedCards.contains(c)) {
+					hasChargableCard = true;
 				}
-			});
+			}
+
+			if (shouldCharge[i] && hasChargableCard) {
+				hasOfferedToCharge = true;
+				final int fi = i;
+				players[i].actionStage = null;
+				players[i].actor.getMove(makeClientView(i), new MoveReporter() {
+					@Override
+					protected void reportMoveImpl(List<Card> move) {
+						for (Card c : move) {
+							assert (players[fi].hand.contains(c));
+							assert (Card.getChargableCards().contains(c));
+							assert (!chargedCards.contains(c));
+						}
+						for (int i = move.size() - 1; i >= 0; i--) {
+							if (chargedCards.contains(move.get(i))) {
+								move.remove(i);
+							}
+						}
+						players[fi].actionStage = new ArrayList<Card>(move);
+						// Reporting of charged cards only happen at the end of the
+						// charging round.
+						stepCharging();
+					}
+				});
+			} else {
+				// If the player is not allowed to charge, pretend they
+				// made an empty move. We need this so we can keep track
+				// of which players that are actually charging has finished
+				// their decision (which is when THEIR actionstage is notNull)
+				players[i].actionStage = Collections.EMPTY_LIST;
+			}
+		}
+		if (!hasOfferedToCharge) {
+			// No-one was eligable to charge. Start the game.
+			startPlaying();
 		}
 	}
 
 	private void stepCharging() {
 		boolean playersReady = true;
-		boolean chargingFinished = true;
-		for (Player p: players) {
-			if (p.actionStage == null) {
+		boolean shouldChargeAgain[] = new boolean[]{false, false, false, false};
+		for (int i = 0; i < 4; i++) {
+			if (players[i].actionStage == null) {
 				playersReady = false;
-			} else if (p.actionStage.size() >= 1) {
-				chargingFinished = false;
+			} else if (players[i].actionStage.size() >= 1) {
+				for (int j = 0; j < 4; j++) {
+					if (j != i) {
+						shouldChargeAgain[j] = true;
+					}
+				}
 			}
 		}
 		if (playersReady) {
@@ -217,11 +244,8 @@ public class GameState {
 					}
 				}
 			}
-			if (chargingFinished) {
-				startPlaying();
-			} else {
-				startCharging(); // Go for another round of charging
-			}
+
+			startCharging(shouldChargeAgain);
 		}
 	}
 
@@ -432,13 +456,13 @@ public class GameState {
 	}
 
 	private static class Player {
-		ArrayList<Card> hand;
-		ArrayList<Card> taken;
+		List<Card> hand;
+		List<Card> taken;
 		PlayerActor actor;
-		ArrayList<Integer> points;
+		List<Integer> points;
 		// What the current player is trying to play but needs to wait for everyone to finish
 		// (charging, passing)
-		ArrayList<Card> actionStage;
+		List<Card> actionStage;
 
 		public Player(PlayerActor actor) {
 			this.actor = actor;
@@ -461,7 +485,7 @@ public class GameState {
 			this.hand.addAll(cards);
 		}
 
-		public ArrayList<Card> getActionStage() {
+		public List<Card> getActionStage() {
 			return actionStage;
 		}
 
@@ -516,6 +540,19 @@ public class GameState {
 
 		public int getIndex() {
 			return index;
+		}
+
+		public static PlayerPosition roundPassTo(Round r) {
+			switch (r) {
+				case Left:
+					return Left;
+				case Across:
+					return Across;
+				case Right:
+					return Right;
+				default:
+					return null;
+			}
 		}
 
 		public static PlayerPosition opposite(PlayerPosition p) {

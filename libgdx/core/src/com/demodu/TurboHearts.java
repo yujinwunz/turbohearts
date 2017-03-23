@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
@@ -63,6 +64,7 @@ public class TurboHearts extends Game {
 			textButtonStyle.up = buttonSkin.getDrawable(Assets.Button.BUTTON_UP);
 			textButtonStyle.down = buttonSkin.getDrawable(Assets.Button.BUTTON_DOWN);
 			textButtonStyle.checked = buttonSkin.getDrawable(Assets.Button.BUTTON_CHECKED);
+			textButtonStyle.disabled = buttonSkin.getDrawable(Assets.Button.BUTTON_DOWN);
 			textButtonStyle.checkedFontColor =
 					new Color(r, g, b, 1);
 			textButtonStyle.downFontColor =
@@ -70,9 +72,18 @@ public class TurboHearts extends Game {
 			textButtonStyle.fontColor =
 					new Color(r, g, b, 1);
 
-
-			textButtonStyle.font = manager.get(Assets.FONT_LARGE);
+			textButtonStyle.font = manager.get(Assets.FONT_MEDIUM);
 			return textButtonStyle;
+		}
+
+		public ScrollPane.ScrollPaneStyle makeScrollPaneStyle() {
+			ScrollPane.ScrollPaneStyle scrollPaneStyle = new ScrollPane.ScrollPaneStyle();
+			Skin skin = new Skin();
+			skin.addRegions(manager.get(Assets.SCROLL_ATLAS, TextureAtlas.class));
+			scrollPaneStyle.vScroll = skin.getDrawable(Assets.Scroll.VSCROLL);
+			scrollPaneStyle.vScrollKnob = skin.getDrawable(Assets.Scroll.VSCROLL_KNOB);
+
+			return scrollPaneStyle;
 		}
 	}
 

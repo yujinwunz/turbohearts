@@ -110,7 +110,7 @@ public class GdxCard extends Card {
 			correctAngle();
 		}
 
-		if (this.isTouched || selected) {
+		if ((this.isTouched && this.state == State.Enabled) || selected) {
 			selectHeight = Math.min(
 					height * SELECT_HEIGHT_MAX_RATIO,
 					selectHeight + delta * SELECT_HEIGHT_MAX_RATIO * height / ANIMATION_DURATION * 4
@@ -124,21 +124,18 @@ public class GdxCard extends Card {
 
 		float x = (float)(this.x);
 		float y = (float)(this.y);
-		if (this.state == State.Enabled || selected) {
-			x += Math.sin(a) * selectHeight;
-			y += Math.cos(a) * selectHeight;
-		}
+		x += Math.sin(a) * selectHeight;
+		y += Math.cos(a) * selectHeight;
 
 		Color prevColour = batch.getColor();
 		if (this.state == State.Disabled) {
 			batch.setColor(new Color(0.5f, 0.5f, 0.5f, 1));
-		} else if (selected) {
-			batch.setColor(new Color(1.0f, 1.0f, 0.90f, 1));
 		}
+
 		if (charged && this.state == State.Disabled) {
-			batch.setColor(new Color(0.5f, 0.4f, 0.3f, 1));
+			batch.setColor(new Color(0.5f, 0.3f, 0.3f, 1));
 		} else if (charged) {
-			batch.setColor(new Color(1.0f, 0.9f, 0.80f, 1));
+			batch.setColor(new Color(1.0f, 0.85f, 0.85f, 1));
 		}
 
 		batch.draw(
@@ -200,7 +197,7 @@ public class GdxCard extends Card {
 		this.isTouched = onPointers.size() > 0;
 
 		if (this.renderedPolygon.contains(actual.x, actual.y) && !this.isTouched) {
-			if (this.state == State.Enabled || selected) {
+			if (this.state == State.Enabled) {
 				try {
 					onClick.call();
 				} catch (Exception e) {

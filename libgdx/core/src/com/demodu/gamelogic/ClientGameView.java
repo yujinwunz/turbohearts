@@ -23,9 +23,9 @@ public class ClientGameView {
 	ArrayList<Card.Suit> playedSuits;
 
 
-	public ClientGameView(ArrayList<Card> table, ArrayList<Card> hand, GameState.Phase gamePhase,
+	public ClientGameView(List<Card> table, List<Card> hand, GameState.Phase gamePhase,
 						  GameState.Round gameRound, boolean heartsBroken, List<Card> legalPlays,
-						  ArrayList<Card> chargedCards, ArrayList<Card.Suit> playedSuits
+						  List<Card> chargedCards, List<Card.Suit> playedSuits
 	) {
 		this.table = new ArrayList<Card>(table);
 		this.hand = new ArrayList<Card>(hand);

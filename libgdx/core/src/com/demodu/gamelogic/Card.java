@@ -17,7 +17,23 @@ public class Card {
 	public static Card example = new Card(Rank.QUEEN, Suit.SPADE);
 	private static List<Card> deck;
 
+	public static final Card QUEEN_OF_SPADES = new Card(Rank.QUEEN, Suit.SPADE);
+	public static final Card JACK_OF_DIAMONDS = new Card(Rank.JACK, Suit.DIAMOND);
+	public static final Card TEN_OF_CLUBS = new Card(Rank.TEN, Suit.CLUB);
+	public static final Card ACE_OF_HEARTS = new Card(Rank.ACE, Suit.HEART);
+	public static final Card TWO_OF_CLUBS = new Card(Rank.TWO, Suit.CLUB);
+
+	public static List<Card> getDeck() {
+		return deck;
+	}
+
+	private static final List<Card> chargableCards = new ArrayList<Card>();
 	static {
+		chargableCards.add(QUEEN_OF_SPADES);
+		chargableCards.add(JACK_OF_DIAMONDS);
+		chargableCards.add(TEN_OF_CLUBS);
+		chargableCards.add(ACE_OF_HEARTS);
+
 		ArrayList<Card> cards = new ArrayList<Card>();
 		int i = 0;
 		for (Suit s: Suit.values()) {
@@ -27,15 +43,8 @@ public class Card {
 		}
 		deck = Collections.unmodifiableList(cards);
 	}
-
-	public static final Card QUEEN_OF_SPADES = new Card(Rank.QUEEN, Suit.SPADE);
-	public static final Card JACK_OF_DIAMONDS = new Card(Rank.JACK, Suit.DIAMOND);
-	public static final Card TEN_OF_CLUBS = new Card(Rank.TEN, Suit.CLUB);
-	public static final Card ACE_OF_HEARTS = new Card(Rank.ACE, Suit.HEART);
-	public static final Card TWO_OF_CLUBS = new Card(Rank.TWO, Suit.CLUB);
-
-	public static List<Card> getDeck() {
-		return deck;
+	public static List<Card> getChargableCards() {
+		return new ArrayList<Card>(chargableCards);
 	}
 
 	public Card(Rank rank, Suit suit) {

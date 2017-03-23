@@ -9,9 +9,11 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
 import java.util.ArrayList;
@@ -29,46 +31,61 @@ public class ScoreScreen extends ScreenAdapter {
 	TextButton.TextButtonStyle textButtonStyle;
 
 	private Label makeLabel(String str) {
-		return new Label(str, new Label.LabelStyle(font, Color.PURPLE));
+		Label label = new Label(str, new Label.LabelStyle(font, Color.YELLOW));
+		label.setAlignment(Align.left);
+		return label;
 	}
 
 	public ScoreScreen(ArrayList<RoundScore> scores, TurboHearts turboHearts, final Callable onContinue) {
 		stage = new Stage(new StretchViewport(800, 480));
 		Table table = new Table();
 		table.setFillParent(true);
-		table.top();
 
 		font = turboHearts.manager.get(Assets.FONT_SMALL);
-		textButtonStyle = turboHearts.resources.makeTextButtonStyle(0, 1.0f, 0.5f);
+		textButtonStyle = turboHearts.resources.makeTextButtonStyle(
+				TurboHeartsGame.BACKGROUND_COLOUR_R,
+				TurboHeartsGame.BACKGROUND_COLOUR_G,
+				TurboHeartsGame.BACKGROUND_COLOUR_B
+		);
 
-		table.add(makeLabel("Player")).pad(30);
-		table.add(makeLabel("Me")).pad(30);
-		table.add(makeLabel("Left")).pad(30);
-		table.add(makeLabel("Across")).pad(30);
-		table.add(makeLabel("Right")).pad(30);
+		float w1 = table.add(makeLabel("Player:  ")).pad(15).getPrefWidth();
+		float w2 = table.add(makeLabel("Me    ")).pad(15).getPrefWidth();
+		float w3 = table.add(makeLabel("Left  ")).pad(15).getPrefWidth();
+		float w4 = table.add(makeLabel("Across")).pad(15).getPrefWidth();
+		float w5 = table.add(makeLabel("Right ")).pad(15).getPrefWidth();
+		table.row();
+
+		Table innerTable = new Table();
+		innerTable.top();
 
 		int selfTot = 0, leftTot = 0, acrossTot = 0, rightTot = 0;
 
 		for (int i = 0; i < scores.size(); i++) {
 			RoundScore score = scores.get(i);
-			table.row();
-			table.add(makeLabel("Round " + (i+1) + ":"));
-			table.add(makeLabel(Integer.toString(score.getSelf())));
-			table.add(makeLabel(Integer.toString(score.getLeft())));
-			table.add(makeLabel(Integer.toString(score.getAcross())));
-			table.add(makeLabel(Integer.toString(score.getRight())));
+			innerTable.add(makeLabel("Round " + (i+1) + ":")).width(w1).padLeft(15).padRight(15);
+			innerTable.add(makeLabel(Integer.toString(score.getSelf()))).width(w2).padLeft(15).padRight(15);
+			innerTable.add(makeLabel(Integer.toString(score.getLeft()))).width(w3).padLeft(15).padRight(15);
+			innerTable.add(makeLabel(Integer.toString(score.getAcross()))).width(w4).padLeft(15).padRight(15);
+			innerTable.add(makeLabel(Integer.toString(score.getRight()))).width(w5).padLeft(15).padRight(15);
 			selfTot += score.getSelf();
 			leftTot += score.getLeft();
 			acrossTot += score.getAcross();
 			rightTot += score.getRight();
+			innerTable.row();
 		}
+		innerTable.row().colspan(5).expand();
+		innerTable.setFillParent(true);
+
+		ScrollPane.ScrollPaneStyle scrollPaneStyle = turboHearts.resources.makeScrollPaneStyle();
+		ScrollPane scrollPane = new ScrollPane(innerTable, scrollPaneStyle);
+
+		table.add(scrollPane).colspan(5);
 		table.row();
-		table.pad(20);
-		table.add(makeLabel("Total:"));
-		table.add(makeLabel(Integer.toString(selfTot)));
-		table.add(makeLabel(Integer.toString(leftTot)));
-		table.add(makeLabel(Integer.toString(acrossTot)));
-		table.add(makeLabel(Integer.toString(rightTot)));
+		table.add(makeLabel("Total:")).fillX().pad(15);
+		table.add(makeLabel(Integer.toString(selfTot))).fillX().pad(15);
+		table.add(makeLabel(Integer.toString(leftTot))).fillX().pad(15);
+		table.add(makeLabel(Integer.toString(acrossTot))).fillX().pad(15);
+		table.add(makeLabel(Integer.toString(rightTot))).fillX().pad(15);
 		table.row();
 
 		// Continue button
@@ -84,7 +101,8 @@ public class ScoreScreen extends ScreenAdapter {
 			}
 		});
 
-		table.add(button).expand().bottom().right().colspan(5);
+
+		table.add(button).right().bottom().expandY().colspan(5);
 
 		stage.addActor(table);
 
@@ -94,7 +112,12 @@ public class ScoreScreen extends ScreenAdapter {
 
 	@Override
 	public void render(float delta) {
-		Gdx.gl.glClearColor(0.0f, 1.0f, 0.5f, 1);
+		Gdx.gl.glClearColor(
+				TurboHeartsGame.BACKGROUND_COLOUR_R,
+				TurboHeartsGame.BACKGROUND_COLOUR_G,
+				TurboHeartsGame.BACKGROUND_COLOUR_B,
+				1
+		);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		stage.act(delta);
 		stage.draw();

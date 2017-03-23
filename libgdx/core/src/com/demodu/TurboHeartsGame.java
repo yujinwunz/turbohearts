@@ -90,7 +90,6 @@ public class TurboHeartsGame extends ScreenAdapter {
 							}
 						}
 
-						addCards(Collections.singletonList(c));
 						break;
 					case Playing:
 						enterWaiting();
@@ -122,8 +121,6 @@ public class TurboHeartsGame extends ScreenAdapter {
 		inputProcessor.addProcessor(stage);
 		Gdx.input.setInputProcessor(inputProcessor);
 	}
-
-
 
 	Vector2 getCoordinatesOfOpponent(GameState.PlayerPosition position) {
 		switch (position) {
@@ -158,7 +155,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		}
 	}
 
-	void startPassing(GameState.Round passDirection) {
+	void startPassing(final GameState.Round passDirection) {
 		Gdx.app.log("TurboHeartsGame", "startPassing");
 		this.phase = Phase.Passing;
 		for (int i = 0; i < playerHand.size(); i++) {
@@ -173,7 +170,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		button.addListener(new ChangeListener() {
 			@Override
 			public void changed (ChangeEvent event, Actor actor) {
-				doPass();
+				doPass(passDirection);
 			}
 		});
 		table.add(button);
@@ -183,12 +180,16 @@ public class TurboHeartsGame extends ScreenAdapter {
 		stage.addActor(table);
 	}
 
-	private void doPass() {
+	private void doPass(GameState.Round passDirection) {
 		assert (playerMove.size() == 3);
+		Vector2 flyTo = getCoordinatesOfOpponent(GameState.PlayerPosition.roundPassTo(passDirection));
 		for (Card c : playerMove) {
 			assert(playerHand.getUnmodifiableCards().contains(c));
-			playerHand.removeCard(c);
+			GdxCard gc = playerHand.removeCard(c);
+			onTable.add(gc);
+			gc.sendTo(flyTo.x, flyTo.y, 0);
 		}
+		clearTableOnNextPlay = true;
 		ArrayList<Card> thisPlayerMove = new ArrayList<Card>(playerMove);
 		playerMove.clear();
 		enterWaiting();
@@ -200,11 +201,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		this.phase = Phase.Charging;
 		boolean hasChargeableCards = false;
 		for (int i = 0; i < playerHand.size(); i++) {
-			if ((playerHand.getCard(i).equals(Card.ACE_OF_HEARTS) ||
-					playerHand.getCard(i).equals(Card.QUEEN_OF_SPADES) ||
-					playerHand.getCard(i).equals(Card.JACK_OF_DIAMONDS) ||
-					playerHand.getCard(i).equals(Card.TEN_OF_CLUBS))
-					&& !playerHand.getCard(i).isCharged()) {
+			if (Card.getChargableCards().contains(playerHand.getCard(i))) {
 				hasChargeableCards = true;
 				playerHand.getCard(i).setState(GdxCard.State.Enabled);
 			} else {
@@ -236,9 +233,9 @@ public class TurboHeartsGame extends ScreenAdapter {
 	private void doCharge() {
 		for (Card c : playerMove) {
 			assert(playerHand.getUnmodifiableCards().contains(c));
-			int i = playerHand.getUnmodifiableCards().indexOf(c);
-			playerHand.getCard(i).setCharged(true);
-			playerHand.getCard(i).setSelected(false);
+			GdxCard gc = playerHand.findCard(c);
+			gc.setCharged(true);
+			gc.setSelected(false);
 			//otherChargedCards.add(playerHand.getCard(i));
 		}
 

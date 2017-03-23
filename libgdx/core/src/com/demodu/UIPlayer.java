@@ -32,6 +32,10 @@ public class UIPlayer extends DelayedPlayer {
 		}
 		game.moveReporter = reporter;
 
+		for (GdxCard c : game.playerHand.getUnmodifiableCards()) {
+			c.setSelected(false);
+		}
+
 		switch (clientGameView.getGamePhase()) {
 			case Passing:
 				game.startPassing(clientGameView.getGameRound());
@@ -78,7 +82,9 @@ public class UIPlayer extends DelayedPlayer {
 		Vector2 from = game.getCoordinatesOfOpponent(position);
 
 		GdxCard c;
-		if (game.otherChargedCards.contains(card)) {
+		if (position == Self) {
+			c = game.playerHand.removeCard(card);
+		} else if (game.otherChargedCards.contains(card)) {
 			c = game.otherChargedCards.get(game.otherChargedCards.indexOf(card));
 			game.otherChargedCards.remove(card);
 		} else {
@@ -112,17 +118,20 @@ public class UIPlayer extends DelayedPlayer {
 		ArrayList<GdxCard> newCards = new ArrayList<GdxCard>();
 
 		for (Card c: cards) {
-			newCards.add(new GdxCard(
-							c.getRank(),
-							c.getSuit(),
-							from.x,
-							from.y,
-							game.playerHand.getHeight(),
-							0,
-							game.turboHearts,
-							GdxCard.State.Inactive
-					)
+			GdxCard gc = new GdxCard(
+					c.getRank(),
+					c.getSuit(),
+					from.x,
+					from.y,
+					game.playerHand.getHeight(),
+					0,
+					game.turboHearts,
+					GdxCard.State.Inactive
 			);
+			newCards.add(gc);
+			if (position != Self) {
+				gc.setSelected(true);
+			}
 		}
 
 		game.addCards(newCards);
