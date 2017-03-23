@@ -139,6 +139,7 @@ public class UIPlayer extends DelayedPlayer {
 
 	@Override
 	public void reportChargeImpl(GameState.PlayerPosition position, Card card) {
+
 		if (position != Self) {
 			float x = 0, y = 0, a = 0;
 			switch (position) {

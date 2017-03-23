@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -45,7 +44,8 @@ public class TurboHeartsGame extends ScreenAdapter {
 
 	Phase phase;
 	Stage stage;
-	Button passButton;
+	TextButton passButton;
+	TextButton chargeButton;
 	InputMultiplexer inputProcessor;
 	TextButton.TextButtonStyle textButtonStyle;
 
@@ -70,26 +70,34 @@ public class TurboHeartsGame extends ScreenAdapter {
 			public void play(GdxCard c) {
 				switch (phase) {
 					case Passing:
-					case Charging:
 						if (c.isSelected()) {
 							c.setSelected(false);
 							playerMove.remove(c);
 						} else {
 							// Can't pass more than 3 cards
-							if (phase != Phase.Passing || playerMove.size() < 3) {
+							if (playerMove.size() < 3) {
 								c.setSelected(true);
 								playerMove.add(c);
 							}
 						}
 
-						if (phase == Phase.Passing) {
-							if (playerMove.size() == 3) {
-								passButton.setDisabled(false);
-							} else {
-								passButton.setDisabled(true);
-							}
+						if (playerMove.size() == 3) {
+							passButton.setDisabled(false);
+						} else {
+							passButton.setDisabled(true);
 						}
 
+						break;
+					case Charging:
+						if (c.isSelected()) {
+							c.setSelected(false);
+							playerMove.remove(c);
+							chargeButton.setText("Charge (" + playerMove.size() + ") cards");
+						} else {
+							c.setSelected(true);
+							playerMove.add(c);
+							chargeButton.setText("Charge (" + playerMove.size() + ") cards");
+						}
 						break;
 					case Playing:
 						enterWaiting();
@@ -166,7 +174,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		table.setFillParent(true);
 		table.center();
 
-		Button button = new TextButton("Pass " + passDirection.toString(), textButtonStyle);
+		TextButton button = new TextButton("Pass " + passDirection.toString(), textButtonStyle);
 		button.addListener(new ChangeListener() {
 			@Override
 			public void changed (ChangeEvent event, Actor actor) {
@@ -201,7 +209,8 @@ public class TurboHeartsGame extends ScreenAdapter {
 		this.phase = Phase.Charging;
 		boolean hasChargeableCards = false;
 		for (int i = 0; i < playerHand.size(); i++) {
-			if (Card.getChargableCards().contains(playerHand.getCard(i))) {
+			if (Card.getChargableCards().contains(playerHand.getCard(i))
+					&& !playerHand.getCard(i).isCharged()) {
 				hasChargeableCards = true;
 				playerHand.getCard(i).setState(GdxCard.State.Enabled);
 			} else {
@@ -209,25 +218,26 @@ public class TurboHeartsGame extends ScreenAdapter {
 			}
 		}
 
-		if (!hasChargeableCards) {
-			moveReporter.reportMove(Collections.EMPTY_LIST);
-			enterWaiting();
+		String buttonText;
+		if (hasChargeableCards) {
+			buttonText = "Charge (0) cards";
 		} else {
-
-			Table table = new Table();
-			table.setFillParent(true);
-			table.center();
-
-			Button button = new TextButton("Charge cards", textButtonStyle);
-			button.addListener(new ChangeListener() {
-				@Override
-				public void changed(ChangeEvent event, Actor actor) {
-					doCharge();
-				}
-			});
-			table.add(button);
-			stage.addActor(table);
+			buttonText = "Finish \"charging\"";
 		}
+
+		Table table = new Table();
+		table.setFillParent(true);
+		table.center();
+
+		chargeButton = new TextButton(buttonText, textButtonStyle);
+		chargeButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				doCharge();
+			}
+		});
+		table.add(chargeButton);
+		stage.addActor(table);
 	}
 
 	private void doCharge() {

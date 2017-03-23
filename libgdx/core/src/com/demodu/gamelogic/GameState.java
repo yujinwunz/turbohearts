@@ -169,22 +169,19 @@ public class GameState {
 	// If a card is charged, players have the opportunity to react
 	// and charge in a follow up round.
 	// Up to 4 charging rounds (one for each chargable card) might be played.
-	private void startCharging(boolean... shouldCharge) {
-		assert (shouldCharge.length == 4);
+	private void startCharging(boolean... shouldChargeAgain) {
 		Gdx.app.log("GameState", "Starting to charge");
 		clearPlayerStageActions();
 		this.phase = Charging;
-		boolean hasOfferedToCharge = false;
-		for (int i = 0; i < 4; i++) {
-			boolean hasChargableCard = false;
-			for (Card c: Card.getChargableCards()) {
-				if (players[i].hand.contains(c) && !chargedCards.contains(c)) {
-					hasChargableCard = true;
-				}
-			}
 
-			if (shouldCharge[i] && hasChargableCard) {
-				hasOfferedToCharge = true;
+		for (int i = 0; i < 4; i++) {
+			if (!shouldChargeAgain[i]) {
+				players[i].actionStage = Collections.EMPTY_LIST;
+			}
+		}
+
+		for (int i = 0; i < 4; i++) {
+			if (shouldChargeAgain[i]) {
 				final int fi = i;
 				players[i].actionStage = null;
 				players[i].actor.getMove(makeClientView(i), new MoveReporter() {
@@ -206,32 +203,25 @@ public class GameState {
 						stepCharging();
 					}
 				});
-			} else {
-				// If the player is not allowed to charge, pretend they
-				// made an empty move. We need this so we can keep track
-				// of which players that are actually charging has finished
-				// their decision (which is when THEIR actionstage is notNull)
-				players[i].actionStage = Collections.EMPTY_LIST;
 			}
-		}
-		if (!hasOfferedToCharge) {
-			// No-one was eligable to charge. Start the game.
-			startPlaying();
 		}
 	}
 
 	private void stepCharging() {
 		boolean playersReady = true;
 		boolean shouldChargeAgain[] = new boolean[]{false, false, false, false};
+		boolean hasCharged = false;
 		for (int i = 0; i < 4; i++) {
 			if (players[i].actionStage == null) {
 				playersReady = false;
+				Gdx.app.log("GameState", "still waiting on player " + i);
 			} else if (players[i].actionStage.size() >= 1) {
 				for (int j = 0; j < 4; j++) {
 					if (j != i) {
 						shouldChargeAgain[j] = true;
 					}
 				}
+				hasCharged = true;
 			}
 		}
 		if (playersReady) {
@@ -245,11 +235,16 @@ public class GameState {
 				}
 			}
 
-			startCharging(shouldChargeAgain);
+			if (hasCharged && chargedCards.size() < Card.getChargableCards().size()) {
+				startCharging(shouldChargeAgain);
+			} else {
+				startPlaying();
+			}
 		}
 	}
 
 	private void startPlaying() {
+
 		phase = FirstRound;
 		for (int i = 0; i < 4; i++) {
 			if (players[i].hand.contains(Card.TWO_OF_CLUBS)) {
