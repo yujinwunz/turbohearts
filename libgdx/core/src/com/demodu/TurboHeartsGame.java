@@ -198,31 +198,39 @@ public class TurboHeartsGame extends ScreenAdapter {
 	void startCharging() {
 		Gdx.app.log("Game", "UI should start charging");
 		this.phase = Phase.Charging;
+		boolean hasChargeableCards = false;
 		for (int i = 0; i < playerHand.size(); i++) {
 			if ((playerHand.getCard(i).equals(Card.ACE_OF_HEARTS) ||
 					playerHand.getCard(i).equals(Card.QUEEN_OF_SPADES) ||
 					playerHand.getCard(i).equals(Card.JACK_OF_DIAMONDS) ||
 					playerHand.getCard(i).equals(Card.TEN_OF_CLUBS))
-					&& !otherChargedCards.contains(playerHand.getCard(i))) {
+					&& !playerHand.getCard(i).isCharged()) {
+				hasChargeableCards = true;
 				playerHand.getCard(i).setState(GdxCard.State.Enabled);
 			} else {
 				playerHand.getCard(i).setState(GdxCard.State.Disabled);
 			}
 		}
 
-		Table table = new Table();
-		table.setFillParent(true);
-		table.center();
+		if (!hasChargeableCards) {
+			moveReporter.reportMove(Collections.EMPTY_LIST);
+			enterWaiting();
+		} else {
 
-		Button button = new TextButton("Charge cards", textButtonStyle);
-		button.addListener(new ChangeListener() {
-			@Override
-			public void changed (ChangeEvent event, Actor actor) {
-				doCharge();
-			}
-		});
-		table.add(button);
-		stage.addActor(table);
+			Table table = new Table();
+			table.setFillParent(true);
+			table.center();
+
+			Button button = new TextButton("Charge cards", textButtonStyle);
+			button.addListener(new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					doCharge();
+				}
+			});
+			table.add(button);
+			stage.addActor(table);
+		}
 	}
 
 	private void doCharge() {

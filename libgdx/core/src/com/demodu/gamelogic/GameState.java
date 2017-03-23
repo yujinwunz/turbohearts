@@ -339,7 +339,6 @@ public class GameState {
 			}
 
 			p.appendPoints(points);
-			p.reset();
 		}
 
 		for (int i = 0; i < 4; i++) {
@@ -349,6 +348,9 @@ public class GameState {
 					players[(i + 2) % 4].getPoints().get(players[(i + 2) % 4].getPoints().size() - 1),
 					players[(i + 3) % 4].getPoints().get(players[(i + 3) % 4].getPoints().size() - 1)
 			);
+		}
+		for (Player p: players) {
+			p.reset();
 		}
 		round = Round.values()[(round.ordinal() + 1)%4];
 		start();

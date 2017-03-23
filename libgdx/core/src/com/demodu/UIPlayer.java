@@ -30,6 +30,8 @@ public class UIPlayer extends DelayedPlayer {
 			game.onTable.clear();
 			game.clearTableOnNextPlay = false;
 		}
+		game.moveReporter = reporter;
+
 		switch (clientGameView.getGamePhase()) {
 			case Passing:
 				game.startPassing(clientGameView.getGameRound());
@@ -45,7 +47,6 @@ public class UIPlayer extends DelayedPlayer {
 				game.phase = TurboHeartsGame.Phase.Waiting;
 				break;
 		}
-		game.moveReporter = reporter;
 	}
 
 	@Override
