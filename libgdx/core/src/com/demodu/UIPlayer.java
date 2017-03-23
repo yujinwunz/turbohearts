@@ -175,7 +175,7 @@ public class UIPlayer extends DelayedPlayer {
 		game.onTable.clear();
 		game.otherChargedCards.clear();
 		this.pause();
-		game.roundEnd();
+		game.roundEnd(score, leftScore, acrossScore, rightScore);
 	}
 
 	@Override

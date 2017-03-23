@@ -316,10 +316,10 @@ public class GameState {
 			boolean hasTenOfClubs = false;
 			int nPointCards = 0;
 			for (Card c : p.taken) {
-				if (c == Card.TEN_OF_CLUBS) {
+				if (c.equals(Card.TEN_OF_CLUBS)) {
 					hasTenOfClubs = true;
 				}
-				if (c == Card.QUEEN_OF_SPADES) {
+				if (c.equals(Card.QUEEN_OF_SPADES)) {
 					points += chargedCards.contains(Card.QUEEN_OF_SPADES) ? 26 : 13;
 					nPointCards += 1;
 				}
@@ -339,17 +339,17 @@ public class GameState {
 			}
 
 			p.appendPoints(points);
+			p.reset();
 		}
 
 		for (int i = 0; i < 4; i++) {
 			players[i].actor.reportRoundEnd(
-					players[i].getPoints().get(players[i].getPoints().size()-1),
-					players[(i+1)%4].getPoints().get(players[(i+1)%4].getPoints().size()-1),
-					players[(i+2)%4].getPoints().get(players[(i+2)%4].getPoints().size()-1),
-					players[(i+3)%4].getPoints().get(players[(i+3)%4].getPoints().size()-1)
+					players[i].getPoints().get(players[i].getPoints().size() - 1),
+					players[(i + 1) % 4].getPoints().get(players[(i + 1) % 4].getPoints().size() - 1),
+					players[(i + 2) % 4].getPoints().get(players[(i + 2) % 4].getPoints().size() - 1),
+					players[(i + 3) % 4].getPoints().get(players[(i + 3) % 4].getPoints().size() - 1)
 			);
 		}
-
 		round = Round.values()[(round.ordinal() + 1)%4];
 		start();
 	}
@@ -440,6 +440,10 @@ public class GameState {
 
 		public Player(PlayerActor actor) {
 			this.actor = actor;
+			reset();
+		}
+
+		public void reset() {
 			this.taken = new ArrayList<Card>();
 			this.points = new ArrayList<Integer>();
 			this.actionStage = null;
@@ -497,12 +501,6 @@ public class GameState {
 		public int getPassIndex() {
 			return index;
 		}
-	}
-
-	public enum Event {
-		TrickEnd,
-		RoundEnd,
-		GameEnd
 	}
 
 	public enum PlayerPosition {

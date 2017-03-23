@@ -3,18 +3,14 @@ package com.demodu;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.demodu.gamelogic.Card;
 import com.demodu.gamelogic.Config;
@@ -53,11 +49,10 @@ public class TurboHeartsGame extends ScreenAdapter {
 	InputMultiplexer inputProcessor;
 	TextButton.TextButtonStyle textButtonStyle;
 
-	Skin buttonSkin = new Skin();
-
 	ArrayList<GdxCard> onTable = new ArrayList<GdxCard>();
 	ArrayList<GdxCard> otherChargedCards = new ArrayList<GdxCard>();
 	boolean clearTableOnNextPlay = false;
+	ArrayList<ScoreScreen.RoundScore> scores = new ArrayList<ScoreScreen.RoundScore>();
 
 	public TurboHeartsGame(final TurboHearts turboHearts) {
 		this.turboHearts = turboHearts;
@@ -117,38 +112,18 @@ public class TurboHeartsGame extends ScreenAdapter {
 				players
 		);
 
-		prepareResources();
+		textButtonStyle = turboHearts.resources.makeTextButtonStyle(
+				BACKGROUND_COLOUR_R,
+				BACKGROUND_COLOUR_G,
+				BACKGROUND_COLOUR_B
+		);
 		gameState.start();
 		inputProcessor.addProcessor(playerHand);
 		inputProcessor.addProcessor(stage);
 		Gdx.input.setInputProcessor(inputProcessor);
 	}
 
-	private void prepareResources() {
-		buttonSkin.addRegions(turboHearts.manager.get(Assets.BUTTON_ATLAS, TextureAtlas.class));
-		for (String drawableName: new String[]{Assets.Button.BUTTON_UP, Assets.Button.BUTTON_DOWN, Assets.Button.BUTTON_CHECKED}) {
-			Drawable d = buttonSkin.getDrawable(drawableName);
-			d.setBottomHeight(BUTTON_PADDING);
-			d.setLeftWidth(BUTTON_PADDING);
-			d.setTopHeight(BUTTON_PADDING);
-			d.setRightWidth(BUTTON_PADDING);
-		}
 
-		textButtonStyle = new TextButton.TextButtonStyle();
-		textButtonStyle.up = buttonSkin.getDrawable(Assets.Button.BUTTON_UP);
-		textButtonStyle.down = buttonSkin.getDrawable(Assets.Button.BUTTON_DOWN);
-		textButtonStyle.checked = buttonSkin.getDrawable(Assets.Button.BUTTON_CHECKED);
-		textButtonStyle.checkedFontColor =
-				new Color(BACKGROUND_COLOUR_R, BACKGROUND_COLOUR_G, BACKGROUND_COLOUR_B, 1);
-		textButtonStyle.downFontColor =
-				new Color(BACKGROUND_COLOUR_R/3, BACKGROUND_COLOUR_G/3, BACKGROUND_COLOUR_B/3, 1);
-		textButtonStyle.fontColor =
-				new Color(BACKGROUND_COLOUR_R, BACKGROUND_COLOUR_G, BACKGROUND_COLOUR_B, 1);
-
-
-		textButtonStyle.font = turboHearts.manager.get(Assets.FONT_LARGE);
-
-	}
 
 	Vector2 getCoordinatesOfOpponent(GameState.PlayerPosition position) {
 		switch (position) {
@@ -276,8 +251,17 @@ public class TurboHeartsGame extends ScreenAdapter {
 		}
 	}
 
-	void roundEnd() {
-
+	void roundEnd(int selfScore, int leftScore, int acrossScore, int rightScore) {
+		final TurboHeartsGame me = this;
+		scores.add(new ScoreScreen.RoundScore(selfScore, leftScore, acrossScore, rightScore));
+		ScoreScreen scoreScreen = new ScoreScreen(scores, turboHearts, new Callable() {
+			@Override
+			public Object call() throws Exception {
+				turboHearts.setScreen(me);
+				return null;
+			}
+		});
+		turboHearts.setScreen(scoreScreen);
 	}
 
 	private void enterWaiting() {
@@ -315,6 +299,11 @@ public class TurboHeartsGame extends ScreenAdapter {
 		this.height = 480;
 		this.playerHand.reposition(this.width/8, -50, this.width*6/8, 140);
 		
+	}
+
+	@Override
+	public void show() {
+		Gdx.input.setInputProcessor(this.inputProcessor);
 	}
 
 	enum Phase {
