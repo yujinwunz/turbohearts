@@ -7,24 +7,23 @@ import java.util.List;
  * Not a full information game :) This is the view of the game given to Ai's.
  */
 public class ClientGameView {
-	Config gameConfig;
-	GameState.Phase gamePhase;
+	private GameConductor.Phase gamePhase;
 
-	GameState.Round gameRound;
+	private GameConductor.Round gameRound;
 
-	ArrayList<Card> table;
-	ArrayList<Card> hand;
+	private ArrayList<Card> table;
+	private ArrayList<Card> hand;
 
-	ArrayList<Card> legalPlays;
+	private ArrayList<Card> legalPlays;
 
-	boolean heartsBroken;
+	private boolean heartsBroken;
 
-	ArrayList<Card> chargedCards;
-	ArrayList<Card.Suit> playedSuits;
+	private ArrayList<Card> chargedCards;
+	private ArrayList<Card.Suit> playedSuits;
 
 
-	public ClientGameView(List<Card> table, List<Card> hand, GameState.Phase gamePhase,
-						  GameState.Round gameRound, boolean heartsBroken, List<Card> legalPlays,
+	public ClientGameView(List<Card> table, List<Card> hand, GameConductor.Phase gamePhase,
+						  GameConductor.Round gameRound, boolean heartsBroken, List<Card> legalPlays,
 						  List<Card> chargedCards, List<Card.Suit> playedSuits
 	) {
 		this.table = new ArrayList<Card>(table);
@@ -61,15 +60,11 @@ public class ClientGameView {
 		return playedSuits;
 	}
 
-	public Config getGameConfig() {
-		return gameConfig;
-	}
-
-	public GameState.Phase getGamePhase() {
+	public GameConductor.Phase getGamePhase() {
 		return gamePhase;
 	}
 
-	public GameState.Round getGameRound() {
+	public GameConductor.Round getGameRound() {
 		return gameRound;
 	}
 }

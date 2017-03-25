@@ -2,11 +2,6 @@ package com.demodu.gamelogic;
 
 import java.util.List;
 
-
-/**
- * Created by yujinwunz on 19/03/2017.
- */
-
 public abstract class MoveReporter {
 	private boolean valid = true;
 

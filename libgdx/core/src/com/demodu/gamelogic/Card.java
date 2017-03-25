@@ -5,10 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by yujinwunz on 17/03/2017.
- */
-
 public class Card {
 
 	private Suit suit;
@@ -27,15 +23,14 @@ public class Card {
 		return deck;
 	}
 
-	private static final List<Card> chargableCards = new ArrayList<Card>();
+	private static final List<Card> chargeableCards = new ArrayList<Card>();
 	static {
-		chargableCards.add(QUEEN_OF_SPADES);
-		chargableCards.add(JACK_OF_DIAMONDS);
-		chargableCards.add(TEN_OF_CLUBS);
-		chargableCards.add(ACE_OF_HEARTS);
+		chargeableCards.add(QUEEN_OF_SPADES);
+		chargeableCards.add(JACK_OF_DIAMONDS);
+		chargeableCards.add(TEN_OF_CLUBS);
+		chargeableCards.add(ACE_OF_HEARTS);
 
 		ArrayList<Card> cards = new ArrayList<Card>();
-		int i = 0;
 		for (Suit s: Suit.values()) {
 			for (Rank r: Rank.values()) {
 				cards.add(new Card(r, s));
@@ -43,8 +38,8 @@ public class Card {
 		}
 		deck = Collections.unmodifiableList(cards);
 	}
-	public static List<Card> getChargableCards() {
-		return new ArrayList<Card>(chargableCards);
+	public static List<Card> getChargeableCards() {
+		return Collections.unmodifiableList(chargeableCards);
 	}
 
 	public Card(Rank rank, Suit suit) {
@@ -93,8 +88,8 @@ public class Card {
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Card) {
-			return ((Card) other).getRank() == this.getRank()
-					&& ((Card) other).getSuit() == this.getSuit();
+			Card c = (Card)other;
+			return c.getRank() == this.getRank() && c.getSuit() == this.getSuit();
 		} else {
 			return false;
 		}

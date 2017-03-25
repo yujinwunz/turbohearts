@@ -13,11 +13,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashSet;
 
-
-/**
- * Created by yujinwunz on 18/03/2017.
- */
-
 public class GdxCard extends Card {
 	public static final double ANIMATION_DURATION = 0.2;
 	public static final double SELECT_HEIGHT_MAX_RATIO = 0.2;
@@ -30,11 +25,11 @@ public class GdxCard extends Card {
 	private boolean isTouched;
 	HashSet<Integer> onPointers = new HashSet<Integer>();
 
-	public void setOnClick(Callable onClick) {
+	public void setOnClick(com.demodu.gwtcompat.Callable onClick) {
 		this.onClick = onClick;
 	}
 
-	Callable onClick = null;
+	com.demodu.gwtcompat.Callable onClick = null;
 
 	TurboHearts turboHearts;
 	TextureRegion region;
@@ -73,7 +68,7 @@ public class GdxCard extends Card {
 				   State state) {
 		super(rank, suit);
 		this.turboHearts = turboHearts;
-		TextureAtlas atlas = turboHearts.manager.get(Assets.CARD_ATLAS);
+		TextureAtlas atlas = turboHearts.manager.get(com.demodu.assets.Assets.CARD_ATLAS);
 		this.x = x;
 		this.y = y;
 		this.a = a;
@@ -85,8 +80,8 @@ public class GdxCard extends Card {
 		this.isTouched = false;
 		this.state = state;
 		TextureRegion region =
-				atlas.findRegion(Assets.getCardName(Card.example));
-		this.region = atlas.findRegion(Assets.getCardName(this));
+				atlas.findRegion(com.demodu.assets.Assets.getCardName(Card.example));
+		this.region = atlas.findRegion(com.demodu.assets.Assets.getCardName(this));
 		double aspectRatio = (double)region.getRegionWidth() / region.getRegionHeight();
 		this.width = this.height * aspectRatio;
 	}

@@ -4,33 +4,22 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.demodu.assets.Assets;
 import com.demodu.gamelogic.Card;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
-/**
- * Created by yujinwunz on 17/03/2017.
- */
-
-public class PlayerHand implements InputProcessor {
-
-	Random random = new Random();
-
-	private ArrayList<GdxCard> cards;
+class PlayerHand implements InputProcessor {
+	private ArrayList<GdxCard> cards = new ArrayList<GdxCard>();;
 	private int x, y, width, height;
-
-	private TextureAtlas atlas;
-	private Skin skin;
-	private TurboHearts turboHearts;
 
 	private PlayHandler onPlay;
 	private int maxCards;
+	private double cardAspectRatio;
 
-	public PlayerHand(
+	PlayerHand(
 			int maxCards,
 			int x,
 			int y,
@@ -39,33 +28,19 @@ public class PlayerHand implements InputProcessor {
 			TurboHearts turboHearts,
 			PlayHandler playHandler
 	) {
-
-		this.turboHearts = turboHearts;
-
-		loadResources();
-
 		this.onPlay = playHandler;
 		this.maxCards = maxCards;
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		TextureRegion region = atlas.findRegion(Assets.getCardName(Card.example));
-		double cardAspectRatio = (double)region.getRegionWidth() / region.getRegionHeight();
-		double cardWidth = height * cardAspectRatio;
-		double cardSpacing = (width - cardWidth) / 13;
 
-		this.cards = new ArrayList<GdxCard>();
-	}
-
-	public void loadResources() {
 		TextureAtlas atlas = turboHearts.manager.get(Assets.CARD_ATLAS);
-		this.atlas = atlas;
-		skin = new Skin();
-		skin.addRegions(atlas);
+		TextureRegion region = atlas.findRegion(Assets.getCardName(Card.example));
+		cardAspectRatio = (double)region.getRegionWidth() / region.getRegionHeight();
 	}
 
-	public void render(float delta, SpriteBatch batch) {
+	void render(float delta, SpriteBatch batch) {
 
 		batch.begin();
 		double left = x;
@@ -75,9 +50,9 @@ public class PlayerHand implements InputProcessor {
 		batch.end();
 	}
 
-	public void addCard(int index, final GdxCard c) {
+	void addCard(int index, final GdxCard c) {
 		cards.add(index, c);
-		c.setOnClick(new Callable() {
+		c.setOnClick(new com.demodu.gwtcompat.Callable() {
 			@Override
 			public Object call() throws Exception {
 				onPlay.play(c);
@@ -87,17 +62,19 @@ public class PlayerHand implements InputProcessor {
 		reposition();
 	}
 
-	public int getHeight() {
+	int getHeight() {
 		return height;
 	}
 
-	public GdxCard removeCard(Card c) {
+	@SuppressWarnings("SuspiciousMethodCalls")
+	GdxCard removeCard(Card c) {
 		GdxCard retval = cards.remove(cards.indexOf(c));
 		reposition();
 		return retval;
 	}
 
-	public GdxCard findCard(Card c) {
+	@SuppressWarnings("SuspiciousMethodCalls")
+	GdxCard findCard(Card c) {
 		return cards.get(cards.indexOf(c));
 	}
 
@@ -105,14 +82,12 @@ public class PlayerHand implements InputProcessor {
 		reposition(this.x, this.y, this.width, this.height);
 	}
 
-	public void reposition(int x, int y, int width, int height) {
+	void reposition(int x, int y, int width, int height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 
-		TextureRegion region = atlas.findRegion(Assets.getCardName(Card.example));
-		double cardAspectRatio = (double)region.getRegionWidth() / region.getRegionHeight();
 		double cardWidth = height * cardAspectRatio;
 		double cardSpacing = (width - cardWidth) / (maxCards - 1);
 
@@ -126,11 +101,11 @@ public class PlayerHand implements InputProcessor {
 
 	}
 
-	public GdxCard getCard(int index) {
+	GdxCard getCard(int index) {
 		return cards.get(index);
 	}
 
-	public List<GdxCard> getUnmodifiableCards() {
+	List<GdxCard> getUnmodifiableCards() {
 		return Collections.unmodifiableList(cards);
 	}
 
@@ -196,7 +171,7 @@ public class PlayerHand implements InputProcessor {
 		return false;
 	}
 
-	public interface PlayHandler {
+	interface PlayHandler {
 		void play(GdxCard c);
 	}
 }

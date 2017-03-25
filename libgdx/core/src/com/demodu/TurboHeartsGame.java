@@ -7,63 +7,55 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.demodu.assets.AssetFactory;
 import com.demodu.gamelogic.Card;
-import com.demodu.gamelogic.Config;
-import com.demodu.gamelogic.GameState;
+import com.demodu.gamelogic.GameConductor;
 import com.demodu.gamelogic.MoveReporter;
-import com.demodu.gamelogic.PlayerActor;
+import com.demodu.player.DelayedPlayer;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by yujinwunz on 17/03/2017.
- */
+class TurboHeartsGame extends ScreenAdapter {
+	static float BACKGROUND_COLOUR_R = 0.1f;
+	static float BACKGROUND_COLOUR_G = 0.4f;
+	static float BACKGROUND_COLOUR_B = 0.15f;
 
-public class TurboHeartsGame extends ScreenAdapter {
-	public static final int BUTTON_PADDING = 20;
-	public static float BACKGROUND_COLOUR_R = 0.1f;
-	public static float BACKGROUND_COLOUR_G = 0.4f;
-	public static float BACKGROUND_COLOUR_B = 0.15f;
+	private int width = 800;
+	private int height = 480;
 
-	int width = 800;
-	int height = 480;
+	private TurboHearts turboHearts;
 
-	TurboHearts turboHearts;
-	GameState gameState;
+	private ArrayList<Card> playerMove;
+	private PlayerHand playerHand;
+	private DelayedPlayer player;
+
+	private Phase phase;
+	private Stage stage;
+	private TextButton passButton;
+	private TextButton chargeButton;
+	private InputMultiplexer inputProcessor;
+	private TextButton.TextButtonStyle textButtonStyle;
+
+	private ArrayList<ScoreScreen.RoundScore> scores = new ArrayList<ScoreScreen.RoundScore>();
 
 	MoveReporter moveReporter;
-	ArrayList<Card> playerMove;
-	PlayerHand playerHand;
-	DelayedPlayer player;
-
-	Phase phase;
-	Stage stage;
-	TextButton passButton;
-	TextButton chargeButton;
-	InputMultiplexer inputProcessor;
-	TextButton.TextButtonStyle textButtonStyle;
-
 	ArrayList<GdxCard> onTable = new ArrayList<GdxCard>();
 	ArrayList<GdxCard> otherChargedCards = new ArrayList<GdxCard>();
 	boolean clearTableOnNextPlay = false;
-	ArrayList<ScoreScreen.RoundScore> scores = new ArrayList<ScoreScreen.RoundScore>();
 
-	public TurboHeartsGame(final TurboHearts turboHearts) {
+	TurboHeartsGame(final TurboHearts turboHearts, GameConductor gameConductor) {
 		this.turboHearts = turboHearts;
 		this.phase = Phase.Waiting;
 		this.playerMove = new ArrayList<Card>();
 		this.stage = new Stage(new StretchViewport(800, 480));
 		this.inputProcessor = new InputMultiplexer();
-
-		/* For now I'm just doing singleplayer. */
-		PlayerActor[] players = new PlayerActor[4];
-		final TurboHeartsGame me = this;
 
 		playerHand = new PlayerHand(13, 100, -50, 600, 140, turboHearts, new PlayerHand.PlayHandler() {
 			@Override
@@ -109,28 +101,21 @@ public class TurboHeartsGame extends ScreenAdapter {
 			}
 		});
 
-		players[0] = player = new UIPlayer(this);
-		for (int i = 1; i < 4; i++) {
-			players[i] = new RandomAI();
-		}
 
-		gameState = new GameState(
-				Config.standardGame,
-				players
-		);
-
-		textButtonStyle = turboHearts.resources.makeTextButtonStyle(
+		textButtonStyle = AssetFactory.makeTextButtonStyle(
+				turboHearts.manager,
 				BACKGROUND_COLOUR_R,
 				BACKGROUND_COLOUR_G,
 				BACKGROUND_COLOUR_B
 		);
-		gameState.start();
+		this.player = new UIPlayer(turboHearts, this);
+		gameConductor.registerPlayer(player);
 		inputProcessor.addProcessor(playerHand);
 		inputProcessor.addProcessor(stage);
 		Gdx.input.setInputProcessor(inputProcessor);
 	}
 
-	Vector2 getCoordinatesOfOpponent(GameState.PlayerPosition position) {
+	Vector2 getCoordinatesOfOpponent(GameConductor.PlayerPosition position) {
 		switch (position) {
 			case Left:
 				return new Vector2(-100, this.height / 2);
@@ -163,7 +148,23 @@ public class TurboHeartsGame extends ScreenAdapter {
 		}
 	}
 
-	void startPassing(final GameState.Round passDirection) {
+	List<GdxCard> getCards() {
+		return playerHand.getUnmodifiableCards();
+	}
+
+	PlayerHand getPlayerHand() {
+		return playerHand;
+	}
+
+	int getWidth() {
+		return width;
+	}
+
+	int getHeight() {
+		return height;
+	}
+
+	void startPassing(final GameConductor.Round passDirection) {
 		Gdx.app.log("TurboHeartsGame", "startPassing");
 		this.phase = Phase.Passing;
 		for (int i = 0; i < playerHand.size(); i++) {
@@ -174,7 +175,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		table.setFillParent(true);
 		table.center();
 
-		TextButton button = new TextButton("Pass " + passDirection.toString(), textButtonStyle);
+		TextButton button = new TextButton("Pass 3 " + passDirection.toString(), textButtonStyle);
 		button.addListener(new ChangeListener() {
 			@Override
 			public void changed (ChangeEvent event, Actor actor) {
@@ -188,11 +189,9 @@ public class TurboHeartsGame extends ScreenAdapter {
 		stage.addActor(table);
 	}
 
-	private void doPass(GameState.Round passDirection) {
-		assert (playerMove.size() == 3);
-		Vector2 flyTo = getCoordinatesOfOpponent(GameState.PlayerPosition.roundPassTo(passDirection));
+	private void doPass(GameConductor.Round passDirection) {
+		Vector2 flyTo = getCoordinatesOfOpponent(GameConductor.PlayerPosition.roundPassTo(passDirection));
 		for (Card c : playerMove) {
-			assert(playerHand.getUnmodifiableCards().contains(c));
 			GdxCard gc = playerHand.removeCard(c);
 			onTable.add(gc);
 			gc.sendTo(flyTo.x, flyTo.y, 0);
@@ -209,7 +208,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		this.phase = Phase.Charging;
 		boolean hasChargeableCards = false;
 		for (int i = 0; i < playerHand.size(); i++) {
-			if (Card.getChargableCards().contains(playerHand.getCard(i))
+			if (Card.getChargeableCards().contains(playerHand.getCard(i))
 					&& !playerHand.getCard(i).isCharged()) {
 				hasChargeableCards = true;
 				playerHand.getCard(i).setState(GdxCard.State.Enabled);
@@ -219,11 +218,18 @@ public class TurboHeartsGame extends ScreenAdapter {
 		}
 
 		String buttonText;
+		String helpText = "";
+		if (otherChargedCards.size() > 0) {
+			helpText = "An opponent has charged. You may react with more charging.";
+		}
 		if (hasChargeableCards) {
 			buttonText = "Charge (0) cards";
+
 		} else {
 			buttonText = "Finish \"charging\"";
+			helpText = "This button avoids timing tells when you can't charge.\n\n" + helpText;
 		}
+
 
 		Table table = new Table();
 		table.setFillParent(true);
@@ -237,12 +243,16 @@ public class TurboHeartsGame extends ScreenAdapter {
 			}
 		});
 		table.add(chargeButton);
+		table.row();
+		Label helpTextLabel =
+				new Label(helpText, AssetFactory.makeSmallLabelStyle(turboHearts.manager, 1, 1, 0));
+		helpTextLabel.setWrap(true);
+		table.add(helpTextLabel).fillX();
 		stage.addActor(table);
 	}
 
 	private void doCharge() {
 		for (Card c : playerMove) {
-			assert(playerHand.getUnmodifiableCards().contains(c));
 			GdxCard gc = playerHand.findCard(c);
 			gc.setCharged(true);
 			gc.setSelected(false);
@@ -269,7 +279,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 	void roundEnd(int selfScore, int leftScore, int acrossScore, int rightScore) {
 		final TurboHeartsGame me = this;
 		scores.add(new ScoreScreen.RoundScore(selfScore, leftScore, acrossScore, rightScore));
-		ScoreScreen scoreScreen = new ScoreScreen(scores, turboHearts, new Callable() {
+		ScoreScreen scoreScreen = new ScoreScreen(scores, turboHearts, new com.demodu.gwtcompat.Callable() {
 			@Override
 			public Object call() throws Exception {
 				turboHearts.setScreen(me);
@@ -279,7 +289,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		turboHearts.setScreen(scoreScreen);
 	}
 
-	private void enterWaiting() {
+	void enterWaiting() {
 		Gdx.app.log("Game", "Entered waiting");
 		for (int i = 0; i < playerHand.size(); i++) {
 			playerHand.getCard(i).setState(GdxCard.State.Inactive);
@@ -321,7 +331,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		Gdx.input.setInputProcessor(this.inputProcessor);
 	}
 
-	enum Phase {
+	private enum Phase {
 		Passing,
 		Waiting,
 		Charging,

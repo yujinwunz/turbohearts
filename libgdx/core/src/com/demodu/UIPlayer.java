@@ -3,25 +3,23 @@ package com.demodu;
 import com.badlogic.gdx.math.Vector2;
 import com.demodu.gamelogic.Card;
 import com.demodu.gamelogic.ClientGameView;
-import com.demodu.gamelogic.GameState;
+import com.demodu.gamelogic.GameConductor;
 import com.demodu.gamelogic.MoveReporter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.demodu.gamelogic.GameState.PlayerPosition.Self;
+import static com.demodu.gamelogic.GameConductor.PlayerPosition.Self;
 
-/**
- * Created by yujinwunz on 22/03/2017.
- */
-
-public class UIPlayer extends DelayedPlayer {
+class UIPlayer extends com.demodu.player.DelayedPlayer {
 
 	private TurboHeartsGame game;
+	private TurboHearts app;
 
-	public UIPlayer(TurboHeartsGame game) {
+	UIPlayer(TurboHearts app, TurboHeartsGame game) {
 		super(0.25f, 1.0f);
 		this.game = game;
+		this.app = app;
 	}
 
 	@Override
@@ -32,7 +30,7 @@ public class UIPlayer extends DelayedPlayer {
 		}
 		game.moveReporter = reporter;
 
-		for (GdxCard c : game.playerHand.getUnmodifiableCards()) {
+		for (GdxCard c : game.getCards()) {
 			c.setSelected(false);
 		}
 
@@ -48,13 +46,14 @@ public class UIPlayer extends DelayedPlayer {
 				game.startPlaying(clientGameView.getLegalPlays());
 				break;
 			default:
-				game.phase = TurboHeartsGame.Phase.Waiting;
+				game.enterWaiting();
 				break;
 		}
 	}
 
+	@SuppressWarnings("SuspiciousMethodCalls")
 	@Override
-	public void reportPlayImpl(GameState.PlayerPosition position, Card card) {
+	public void reportPlayImpl(GameConductor.PlayerPosition position, Card card) {
 		if (game.clearTableOnNextPlay) {
 			game.onTable.clear();
 			game.clearTableOnNextPlay = false;
@@ -83,7 +82,7 @@ public class UIPlayer extends DelayedPlayer {
 
 		GdxCard c;
 		if (position == Self) {
-			c = game.playerHand.removeCard(card);
+			c = game.getPlayerHand().removeCard(card);
 		} else if (game.otherChargedCards.contains(card)) {
 			c = game.otherChargedCards.get(game.otherChargedCards.indexOf(card));
 			game.otherChargedCards.remove(card);
@@ -93,9 +92,9 @@ public class UIPlayer extends DelayedPlayer {
 					card.getSuit(),
 					from.x,
 					from.y,
-					game.playerHand.getHeight(),
+					game.getPlayerHand().getHeight(),
 					0,
-					game.turboHearts,
+					app,
 					GdxCard.State.Inactive
 			);
 		}
@@ -106,14 +105,14 @@ public class UIPlayer extends DelayedPlayer {
 			game.onTable.add(c);
 		}
 		c.sendTo(
-				(float)(offsetX + game.width / 2),
-				(float)(offsetY + game.height / 2),
+				(float)(offsetX + game.getWidth() / 2),
+				(float)(offsetY + game.getHeight() / 2),
 				(float)a
 		);
 	}
 
 	@Override
-	public void reportPassImpl(GameState.PlayerPosition position, List<Card> cards) {
+	public void reportPassImpl(GameConductor.PlayerPosition position, List<Card> cards) {
 		Vector2 from = game.getCoordinatesOfOpponent(position);
 		ArrayList<GdxCard> newCards = new ArrayList<GdxCard>();
 
@@ -123,9 +122,9 @@ public class UIPlayer extends DelayedPlayer {
 					c.getSuit(),
 					from.x,
 					from.y,
-					game.playerHand.getHeight(),
+					game.getPlayerHand().getHeight(),
 					0,
-					game.turboHearts,
+					app,
 					GdxCard.State.Inactive
 			);
 			newCards.add(gc);
@@ -138,21 +137,19 @@ public class UIPlayer extends DelayedPlayer {
 	}
 
 	@Override
-	public void reportChargeImpl(GameState.PlayerPosition position, Card card) {
+	public void reportChargeImpl(GameConductor.PlayerPosition position, Card card) {
 
 		if (position != Self) {
 			float x = 0, y = 0, a = 0;
 			switch (position) {
-				case Self:
-					break;
 				case Left:
-					y = game.height/2 - 30 * game.otherChargedCards.size(); a = (float)Math.PI/2;
+					y = game.getHeight()/2 - 30 * game.otherChargedCards.size(); a = (float)Math.PI/2;
 					break;
 				case Across:
-					x = game.width/2 - 30 * game.otherChargedCards.size(); y = game.height;
+					x = game.getWidth()/2 - 30 * game.otherChargedCards.size(); y = game.getHeight();
 					break;
 				case Right:
-					y = game.height/2 + 30 * game.otherChargedCards.size(); x = game.width; a = (float)Math.PI/2;
+					y = game.getHeight()/2 + 30 * game.otherChargedCards.size(); x = game.getWidth(); a = (float)Math.PI/2;
 					break;
 			}
 
@@ -161,9 +158,9 @@ public class UIPlayer extends DelayedPlayer {
 					card.getRank(),
 						card.getSuit(),
 						x, y,
-						game.playerHand.getHeight(),
+						game.getPlayerHand().getHeight(),
 						a,
-						game.turboHearts,
+						app,
 						GdxCard.State.Inactive
 				)
 			);
@@ -172,7 +169,7 @@ public class UIPlayer extends DelayedPlayer {
 	}
 
 	@Override
-	public void reportTrickEndImpl(GameState.PlayerPosition position) {
+	public void reportTrickEndImpl(GameConductor.PlayerPosition position) {
 		Vector2 flyTo = game.getCoordinatesOfOpponent(position);
 		for (GdxCard c : game.onTable) {
 			c.sendTo(flyTo.x, flyTo.y, (float)c.a);

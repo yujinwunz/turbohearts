@@ -9,10 +9,10 @@ import java.util.List;
 public interface PlayerActor {
 	void getMove(ClientGameView clientGameView, MoveReporter reporter);
 
-	void reportPlay(GameState.PlayerPosition position, Card card);
-	void reportPass(GameState.PlayerPosition position, List<Card> cards);
-	void reportCharge(GameState.PlayerPosition position, Card card);
-	void reportTrickEnd(GameState.PlayerPosition position);
+	void reportPlay(GameConductor.PlayerPosition position, Card card);
+	void reportPass(GameConductor.PlayerPosition position, List<Card> cards);
+	void reportCharge(GameConductor.PlayerPosition position, Card card);
+	void reportTrickEnd(GameConductor.PlayerPosition position);
 	void reportRoundEnd(int score, int leftScore, int acrossScore, int rightScore);
 	void reportGameEnd(int score, int leftScore, int acrossScore, int rightScore);
 }

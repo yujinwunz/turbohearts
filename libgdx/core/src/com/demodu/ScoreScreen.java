@@ -15,20 +15,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.demodu.assets.AssetFactory;
 
 import java.util.ArrayList;
 
-/**
- * Created by yujinwunz on 22/03/2017.
- */
-
-public class ScoreScreen extends ScreenAdapter {
+class ScoreScreen extends ScreenAdapter {
 	private Stage stage;
-	BitmapFont font;
-	TurboHearts turboHearts;
-	Callable onContinue;
-
-	TextButton.TextButtonStyle textButtonStyle;
+	private BitmapFont font;
 
 	private Label makeLabel(String str) {
 		Label label = new Label(str, new Label.LabelStyle(font, Color.YELLOW));
@@ -36,13 +29,14 @@ public class ScoreScreen extends ScreenAdapter {
 		return label;
 	}
 
-	public ScoreScreen(ArrayList<RoundScore> scores, TurboHearts turboHearts, final Callable onContinue) {
+	ScoreScreen(ArrayList<RoundScore> scores, TurboHearts turboHearts, final com.demodu.gwtcompat.Callable onContinue) {
 		stage = new Stage(new StretchViewport(800, 480));
 		Table table = new Table();
 		table.setFillParent(true);
 
-		font = turboHearts.manager.get(Assets.FONT_SMALL);
-		textButtonStyle = turboHearts.resources.makeTextButtonStyle(
+		font = turboHearts.manager.get(com.demodu.assets.Assets.FONT_SMALL);
+		TextButton.TextButtonStyle textButtonStyle = AssetFactory.makeTextButtonStyle(
+				turboHearts.manager,
 				TurboHeartsGame.BACKGROUND_COLOUR_R,
 				TurboHeartsGame.BACKGROUND_COLOUR_G,
 				TurboHeartsGame.BACKGROUND_COLOUR_B
@@ -73,10 +67,10 @@ public class ScoreScreen extends ScreenAdapter {
 			rightTot += score.getRight();
 			innerTable.row();
 		}
-		innerTable.row().colspan(5).expand();
+		innerTable.row().colspan(5).expand().padBottom(30);
 		innerTable.setFillParent(true);
 
-		ScrollPane.ScrollPaneStyle scrollPaneStyle = turboHearts.resources.makeScrollPaneStyle();
+		ScrollPane.ScrollPaneStyle scrollPaneStyle = AssetFactory.makeScrollPaneStyle(turboHearts.manager);
 		ScrollPane scrollPane = new ScrollPane(innerTable, scrollPaneStyle);
 
 		table.add(scrollPane).colspan(5);
@@ -105,8 +99,6 @@ public class ScoreScreen extends ScreenAdapter {
 		table.add(button).right().bottom().expandY().colspan(5);
 
 		stage.addActor(table);
-
-		this.onContinue = onContinue;
 		Gdx.input.setInputProcessor(stage);
 	}
 
@@ -129,28 +121,28 @@ public class ScoreScreen extends ScreenAdapter {
 	}
 
 	static class RoundScore {
-		int self, left, across, right;
+		private int self, left, across, right;
 
-		public RoundScore(int self, int left, int across, int right) {
+		RoundScore(int self, int left, int across, int right) {
 			this.self = self;
 			this.left = left;
 			this.across = across;
 			this.right = right;
 		}
 
-		public int getSelf() {
+		int getSelf() {
 			return self;
 		}
 
-		public int getLeft() {
+		int getLeft() {
 			return left;
 		}
 
-		public int getAcross() {
+		int getAcross() {
 			return across;
 		}
 
-		public int getRight() {
+		int getRight() {
 			return right;
 		}
 	}
