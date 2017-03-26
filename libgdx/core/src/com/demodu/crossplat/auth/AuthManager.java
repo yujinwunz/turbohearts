@@ -5,9 +5,8 @@ package com.demodu.crossplat.auth;
  */
 
 public interface AuthManager {
-	void triggerLogin(LoginMethod method);
-	void registerCallback(LoginCallback callback);
-
+	void startLogin(LoginMethod method, LoginCallback callback);
+	Profile getCurrentLogin();
 
 	interface LoginCallback {
 		void onFailure(String message);

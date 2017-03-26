@@ -32,7 +32,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 		endOfQueue += cardPlayDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
-			public Object call() throws Exception {
+			public Object call() {
 				getMoveImpl(clientGameView, reporter);
 				return null;
 			}
@@ -46,7 +46,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 		}
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
-			public Object call() throws Exception {
+			public Object call() {
 				reportPlayImpl(position, card);
 				return null;
 			}
@@ -58,7 +58,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 		endOfQueue += cardPlayDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
-			public Object call() throws Exception {
+			public Object call() {
 				reportPassImpl(position, cards);
 				return null;
 			}
@@ -77,7 +77,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 		}
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
-			public Object call() throws Exception {
+			public Object call() {
 				reportChargeImpl(position, card);
 				return null;
 			}
@@ -89,7 +89,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 		endOfQueue += roundEndDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
-			public Object call() throws Exception {
+			public Object call() {
 				reportTrickEndImpl(position);
 				return null;
 			}
@@ -101,7 +101,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 		endOfQueue += roundEndDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
-			public Object call() throws Exception {
+			public Object call() {
 				reportRoundEndImpl(score, leftScore, acrossScore, rightScore);
 				return null;
 			}
@@ -113,7 +113,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 		endOfQueue += roundEndDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
-			public Object call() throws Exception {
+			public Object call() {
 				reportGameEndImpl(score, leftScore, rightScore, acrossScore);
 				return null;
 			}

@@ -11,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 public class AssetFactory {
-	private static final int BUTTON_PADDING = 20;
+	private static final int BUTTON_PADDING = 10;
 
 	public static TextButton.TextButtonStyle makeTextButtonStyle(
 			AssetManager manager,

@@ -7,12 +7,28 @@ import java.util.List;
 
 public interface ContentManager {
 
-	List<LeaderBoardEntry> getPublicScoreBoard(Profile profile);
+	void queryPublicLeaderBoard(Profile profile, LeaderboardResultCallback callback);
 
-
+	interface LeaderboardResultCallback {
+		void onLeaderboardLoaded(List<LeaderBoardEntry> leaderBoardEntries);
+	}
 
 	class LeaderBoardEntry {
-		Avatar avatar;
-		int elo;
+		private Avatar avatar;
+		private int elo;
+
+		public LeaderBoardEntry(Avatar avatar, int elo) {
+
+			this.avatar = avatar;
+			this.elo = elo;
+		}
+
+		public Avatar getAvatar() {
+			return avatar;
+		}
+
+		public int getElo() {
+			return elo;
+		}
 	}
 }

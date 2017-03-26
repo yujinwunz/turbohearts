@@ -54,7 +54,7 @@ class PlayerHand implements InputProcessor {
 		cards.add(index, c);
 		c.setOnClick(new Callable() {
 			@Override
-			public Object call() throws Exception {
+			public Object call() {
 				onPlay.play(c);
 				return null;
 			}

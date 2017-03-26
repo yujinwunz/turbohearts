@@ -3,7 +3,7 @@ package com.demodu;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -41,6 +41,8 @@ class TurboHeartsGame extends ScreenAdapter {
 	private TextButton chargeButton;
 	private InputMultiplexer inputProcessor;
 	private TextButton.TextButtonStyle textButtonStyle;
+
+	private Texture background;
 
 	private ArrayList<ScoreScreen.RoundScore> scores = new ArrayList<ScoreScreen.RoundScore>();
 
@@ -107,6 +109,9 @@ class TurboHeartsGame extends ScreenAdapter {
 				Assets.Colors.BACKGROUND_COLOUR_G,
 				Assets.Colors.BACKGROUND_COLOUR_B
 		);
+		this.background = gameContext.getManager().get(Assets.BACKGROUND);
+		background.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+
 		this.player = new UIPlayer(gameContext, this);
 		gameConductor.registerPlayer(player);
 		inputProcessor.addProcessor(playerHand);
@@ -282,7 +287,7 @@ class TurboHeartsGame extends ScreenAdapter {
 		scores.add(new ScoreScreen.RoundScore(selfScore, leftScore, acrossScore, rightScore));
 		ScoreScreen scoreScreen = new ScoreScreen(scores, gameContext, new Callable() {
 			@Override
-			public Object call() throws Exception {
+			public Object call() {
 				gameContext.setScreen(me);
 				return null;
 			}
@@ -307,10 +312,16 @@ class TurboHeartsGame extends ScreenAdapter {
 				Assets.Colors.BACKGROUND_COLOUR_B,
 				1
 		);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		//Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		gameContext.getSpriteBatch().begin();
+		gameContext.getSpriteBatch().draw(background, 0, 0, 0, 0, width, height);
+		gameContext.getSpriteBatch().end();
+
 		this.playerHand.render(delta, gameContext.getSpriteBatch());
 		stage.act();
 		stage.draw();
+
 		gameContext.getSpriteBatch().begin();
 		for (GdxCard c : onTable) {
 			c.render(delta, gameContext.getSpriteBatch());

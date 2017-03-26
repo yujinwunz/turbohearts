@@ -5,5 +5,14 @@ package com.demodu.crossplat.auth;
  */
 
 public class Avatar {
-	String username;
+	private String username;
+
+	public String getUsername() {
+		return username;
+	}
+
+	public Avatar(String username) {
+
+		this.username = username;
+	}
 }

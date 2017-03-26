@@ -8,13 +8,18 @@ import java.util.List;
 
 public interface LobbyManager {
 	void enterLobby(Profile profile, LobbyListener listener);
+	// Halts updates about lobby games.
 	void exitLobby();
 
 	void enterRoom(LobbyEntry entry, LobbyRoomListener lobbyRoomListener);
+	// Tells server that we've left and halts updates.
 	void exitRoom();
 
+	// creates a room and enters it.
+	void createRoom(LobbyRoomListener lobbyRoomListener);
+
 	// Calls the onPlay method of the current lobbyRoomListener if success.
-	void startGame();
+	void startGame(LobbyRoomListener lobbyRoomListener);
 
 	interface LobbyListener {
 		void onLobbyList(List<LobbyEntry> lobbyList);
@@ -25,11 +30,12 @@ public interface LobbyManager {
 		boolean onPlayerListUpdate(List<Avatar> players);
 		void onPlay(
 				GameConductor gameConductor,
-				MatchId matchId,
 				MatchManager manager,
+				MatchId matchId,
 				Avatar left,
 				Avatar across,
 				Avatar right
 		);
+		void onCancel(String message);
 	}
 }

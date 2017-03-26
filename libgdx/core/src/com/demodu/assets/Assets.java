@@ -1,6 +1,7 @@
 package com.demodu.assets;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.demodu.gamelogic.Card;
@@ -13,6 +14,8 @@ public class Assets {
 	public static String BUTTON_ATLAS = "buttons/buttons.pack.atlas";
 	public static String SCROLL_ATLAS = "scroll/scroll.pack.atlas";
 
+	public static String BACKGROUND = "table.png";
+
 	public static String getCardName(Card c) {
 		return c.getRank().getFilenameVal() + c.getSuit().getFilenameVal();
 	}
@@ -24,6 +27,7 @@ public class Assets {
 		manager.load(FONT_SMALL, BitmapFont.class);
 		manager.load(FONT_MEDIUM, BitmapFont.class);
 		manager.load(FONT_LARGE, BitmapFont.class);
+		manager.load(BACKGROUND, Texture.class);
 	}
 
 	public static void load(AssetManager manager) {

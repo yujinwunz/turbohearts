@@ -8,5 +8,5 @@ public interface Callable<V> {
 	 * @return computed result
 	 * @throws Exception if unable to compute a result
 	 */
-	V call() throws Exception;
+	V call();
 }

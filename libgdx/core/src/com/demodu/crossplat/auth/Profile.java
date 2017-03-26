@@ -2,6 +2,13 @@ package com.demodu.crossplat.auth;
 
 
 public class Profile {
-	// TODO
-	Avatar avatar;
+	private Avatar avatar;
+
+	public Avatar getAvatar() {
+		return avatar;
+	}
+
+	public Profile(Avatar avatar) {
+		this.avatar = avatar;
+	}
 }
