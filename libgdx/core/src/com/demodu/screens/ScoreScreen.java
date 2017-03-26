@@ -42,7 +42,7 @@ public class ScoreScreen extends ScreenAdapter {
 		table.setFillParent(true);
 
 		font = gameContext.getManager().get(Assets.FONT_SMALL);
-		TextButton.TextButtonStyle textButtonStyle = AssetFactory.makeTextButtonStyle(
+		TextButton.TextButtonStyle textButtonStyle = AssetFactory.makeSmallTextButtonStyle(
 				gameContext.getManager(),
 				Assets.Colors.BACKGROUND_COLOUR_R,
 				Assets.Colors.BACKGROUND_COLOUR_G,

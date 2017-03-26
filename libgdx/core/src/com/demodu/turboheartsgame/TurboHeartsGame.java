@@ -104,7 +104,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		});
 
 
-		textButtonStyle = AssetFactory.makeTextButtonStyle(
+		textButtonStyle = AssetFactory.makeSmallTextButtonStyle(
 				gameContext.getManager(),
 				Assets.Colors.BACKGROUND_COLOUR_R,
 				Assets.Colors.BACKGROUND_COLOUR_G,

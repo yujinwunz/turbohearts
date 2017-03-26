@@ -31,18 +31,18 @@ public class Menu extends ScreenAdapter {
 		table.setFillParent(true);
 		table.center();
 
-		Label titleLabel = new Label(title, AssetFactory.makeSmallLabelStyle(
+		Label titleLabel = new Label(title, AssetFactory.makeMediumLabelStyle(
 				gameContext.getManager(),
-				Assets.Colors.BACKGROUND_COLOUR_R,
-				Assets.Colors.BACKGROUND_COLOUR_G,
-				Assets.Colors.BACKGROUND_COLOUR_B
+				1,
+				1,
+				0
 		));
 		titleLabel.setAlignment(Align.center);
 
 		table.add(titleLabel);
 		table.row().padBottom(20f);
 
-		TextButton.TextButtonStyle textButtonStyle = AssetFactory.makeTextButtonStyle(
+		TextButton.TextButtonStyle textButtonStyle = AssetFactory.makeMediumTextButtonStyle(
 				gameContext.getManager(),
 				Assets.Colors.BACKGROUND_COLOUR_R,
 				Assets.Colors.BACKGROUND_COLOUR_G,

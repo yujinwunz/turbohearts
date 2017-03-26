@@ -57,7 +57,7 @@ public class MultiplayerLobby extends ScreenAdapter {
 		table.setFillParent(true);
 		centerCell = table.add(makeLoadingWidget()).expand().colspan(2);
 		table.row();
-		this.buttonStyle = AssetFactory.makeTextButtonStyle(
+		this.buttonStyle = AssetFactory.makeSmallTextButtonStyle(
 				gameContext.getManager(),
 				Assets.Colors.BACKGROUND_COLOUR_R,
 				Assets.Colors.BACKGROUND_COLOUR_G,

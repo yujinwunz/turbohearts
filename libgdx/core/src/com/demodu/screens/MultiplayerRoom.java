@@ -150,7 +150,7 @@ public class MultiplayerRoom extends ScreenAdapter {
 			table.row();
 		}
 
-		Button leaveButton = new TextButton("Leave", AssetFactory.makeTextButtonStyle(
+		Button leaveButton = new TextButton("Leave", AssetFactory.makeSmallTextButtonStyle(
 				gameContext.getManager(),
 				Assets.Colors.BACKGROUND_COLOUR_R,
 				Assets.Colors.BACKGROUND_COLOUR_G,
@@ -165,7 +165,7 @@ public class MultiplayerRoom extends ScreenAdapter {
 		table.add(leaveButton).left().bottom();
 
 		if (hosting) {
-			startButton = new TextButton("Start Game", AssetFactory.makeTextButtonStyle(
+			startButton = new TextButton("Start Game", AssetFactory.makeSmallTextButtonStyle(
 					gameContext.getManager(),
 					Assets.Colors.BACKGROUND_COLOUR_R,
 					Assets.Colors.BACKGROUND_COLOUR_G,
