@@ -1,4 +1,4 @@
-package com.demodu;
+package com.demodu.turboheartsgame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector3;
+import com.demodu.GameContext;
 import com.demodu.assets.Assets;
 import com.demodu.gamelogic.Card;
 import com.demodu.gwtcompat.Callable;

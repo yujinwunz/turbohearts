@@ -1,6 +1,7 @@
-package com.demodu;
+package com.demodu.turboheartsgame;
 
 import com.badlogic.gdx.math.Vector2;
+import com.demodu.GameContext;
 import com.demodu.gamelogic.Card;
 import com.demodu.gamelogic.ClientGameView;
 import com.demodu.gamelogic.GameConductor;

@@ -17,6 +17,7 @@ import com.demodu.gwtcompat.Callable;
 import com.demodu.player.RandomAI;
 import com.demodu.screens.MainMenu;
 import com.demodu.screens.MultiplayerLobby;
+import com.demodu.turboheartsgame.TurboHeartsGame;
 
 public class TurboHearts extends Game implements GameContext {
 

@@ -1,9 +1,10 @@
-package com.demodu;
+package com.demodu.turboheartsgame;
 
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.demodu.GameContext;
 import com.demodu.assets.Assets;
 import com.demodu.gamelogic.Card;
 import com.demodu.gwtcompat.Callable;

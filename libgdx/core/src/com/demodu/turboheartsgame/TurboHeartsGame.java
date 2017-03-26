@@ -1,4 +1,4 @@
-package com.demodu;
+package com.demodu.turboheartsgame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.demodu.*;
 import com.demodu.assets.AssetFactory;
 import com.demodu.assets.Assets;
 import com.demodu.gamelogic.Card;
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-class TurboHeartsGame extends ScreenAdapter {
+public class TurboHeartsGame extends ScreenAdapter {
 	private int width = 800;
 	private int height = 480;
 
@@ -51,7 +52,7 @@ class TurboHeartsGame extends ScreenAdapter {
 	ArrayList<GdxCard> otherChargedCards = new ArrayList<GdxCard>();
 	boolean clearTableOnNextPlay = false;
 
-	TurboHeartsGame(final GameContext gameContext, GameConductor gameConductor) {
+	public TurboHeartsGame(final GameContext gameContext, GameConductor gameConductor) {
 		this.gameContext = gameContext;
 		this.phase = Phase.Waiting;
 		this.playerMove = new ArrayList<Card>();

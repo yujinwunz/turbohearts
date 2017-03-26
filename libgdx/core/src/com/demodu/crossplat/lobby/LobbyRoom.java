@@ -11,11 +11,13 @@ import java.util.List;
 
 public class LobbyRoom {
 	private List<Avatar> players;
+	private String name;
 	private Avatar owner;
 	private MatchId id;
 
-	public LobbyRoom(MatchId id, List<Avatar> players, Avatar owner) {
+	public LobbyRoom(MatchId id, String name, List<Avatar> players, Avatar owner) {
 		this.id = id;
+		this.name = name;
 		this.players = players;
 		this.owner = owner;
 	}
@@ -30,5 +32,9 @@ public class LobbyRoom {
 
 	public MatchId getId() {
 		return id;
+	}
+
+	public String getName() {
+		return name;
 	}
 }

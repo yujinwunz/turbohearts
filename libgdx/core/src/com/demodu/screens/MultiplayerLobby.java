@@ -20,6 +20,7 @@ import com.demodu.crossplat.auth.Avatar;
 import com.demodu.crossplat.auth.Profile;
 import com.demodu.crossplat.lobby.LobbyEntry;
 import com.demodu.crossplat.lobby.LobbyManager;
+import com.demodu.crossplat.lobby.RoomOptions;
 import com.demodu.gwtcompat.Callable;
 
 import java.util.List;
@@ -141,16 +142,36 @@ public class MultiplayerLobby extends ScreenAdapter {
 	}
 
 	private void enterRoom(LobbyEntry lobbyEntry) {
-		/*gameContext.setScreen(new MultiplayerRoom(
+		gameContext.setScreen(new MultiplayerRoom(
 				gameContext,
 				lobbyManager,
-				lobbyEntry,
-				profile
-		));*/
+				profile,
+				new Callable() {
+					@Override
+					public Object call() {
+						gameContext.setScreen(MultiplayerLobby.this);
+						return null;
+					}
+				},
+				lobbyEntry
+		));
 	}
 
 	private void createRoom() {
-
+		// TODO: A create room screen.
+		gameContext.setScreen(new MultiplayerRoom(
+				gameContext,
+				lobbyManager,
+				profile,
+				new RoomOptions("Kekroom"),
+				new Callable() {
+					@Override
+					public Object call() {
+						gameContext.setScreen(MultiplayerLobby.this);
+						return null;
+					}
+				}
+		));
 	}
 
 	@Override

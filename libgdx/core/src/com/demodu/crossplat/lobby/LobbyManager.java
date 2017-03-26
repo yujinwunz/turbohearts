@@ -16,10 +16,10 @@ public interface LobbyManager {
 	void exitRoom();
 
 	// creates a room and enters it.
-	void createRoom(LobbyRoomListener lobbyRoomListener);
+	void createRoom(RoomOptions options, LobbyRoomListener lobbyRoomListener);
 
-	// Calls the onPlay method of the current lobbyRoomListener if success.
-	void startGame(LobbyRoomListener lobbyRoomListener);
+	// Calls the onPlay method of the lobbyRoomListener passed when creating the room if success.
+	void startGame();
 
 	interface LobbyListener {
 		void onLobbyList(List<LobbyEntry> lobbyList);
@@ -27,7 +27,7 @@ public interface LobbyManager {
 
 	interface LobbyRoomListener {
 		void onEnter(LobbyRoom lobbyRoom);
-		boolean onPlayerListUpdate(List<Avatar> players);
+		void onPlayerListUpdate(List<Avatar> players);
 		void onPlay(
 				GameConductor gameConductor,
 				MatchManager manager,
