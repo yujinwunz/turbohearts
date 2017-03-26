@@ -4,14 +4,15 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.demodu.assets.Assets;
 import com.demodu.gamelogic.LocalGameConductor;
 import com.demodu.player.RandomAI;
 
-public class TurboHearts extends Game {
+public class TurboHearts extends Game implements GameContext {
 
-	AssetManager manager;
-	SpriteBatch spriteBatch;
-	OrthographicCamera camera;
+	private AssetManager manager;
+	private SpriteBatch spriteBatch;
+	private OrthographicCamera camera;
 
 	@Override
 	public void create () {
@@ -20,8 +21,8 @@ public class TurboHearts extends Game {
 		spriteBatch = new SpriteBatch();
 		spriteBatch.setProjectionMatrix(camera.combined);
 		manager = new AssetManager();
-		com.demodu.assets.Assets.stage(manager);
-		com.demodu.assets.Assets.load(manager);
+		Assets.stage(manager);
+		Assets.load(manager);
 
 		setScreen(new TurboHeartsGame(this, new LocalGameConductor(
 				new RandomAI(),
@@ -42,5 +43,20 @@ public class TurboHearts extends Game {
 		camera.setToOrtho(false, (float)(480f * aspectRatio), 480);
 
 		spriteBatch.setProjectionMatrix(camera.combined);
+	}
+
+	@Override
+	public AssetManager getManager() {
+		return manager;
+	}
+
+	@Override
+	public SpriteBatch getSpriteBatch() {
+		return spriteBatch;
+	}
+
+	@Override
+	public OrthographicCamera getCamera() {
+		return camera;
 	}
 }

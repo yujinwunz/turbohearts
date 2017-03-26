@@ -5,21 +5,22 @@ import com.demodu.gamelogic.Card;
 import com.demodu.gamelogic.ClientGameView;
 import com.demodu.gamelogic.GameConductor;
 import com.demodu.gamelogic.MoveReporter;
+import com.demodu.player.DelayedPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.demodu.gamelogic.GameConductor.PlayerPosition.Self;
 
-class UIPlayer extends com.demodu.player.DelayedPlayer {
+class UIPlayer extends DelayedPlayer {
 
 	private TurboHeartsGame game;
-	private TurboHearts app;
+	private GameContext gameContext;
 
-	UIPlayer(TurboHearts app, TurboHeartsGame game) {
+	UIPlayer(GameContext gameContext, TurboHeartsGame game) {
 		super(0.25f, 1.0f);
 		this.game = game;
-		this.app = app;
+		this.gameContext = gameContext;
 	}
 
 	@Override
@@ -94,7 +95,7 @@ class UIPlayer extends com.demodu.player.DelayedPlayer {
 					from.y,
 					game.getPlayerHand().getHeight(),
 					0,
-					app,
+					gameContext,
 					GdxCard.State.Inactive
 			);
 		}
@@ -124,7 +125,7 @@ class UIPlayer extends com.demodu.player.DelayedPlayer {
 					from.y,
 					game.getPlayerHand().getHeight(),
 					0,
-					app,
+					gameContext,
 					GdxCard.State.Inactive
 			);
 			newCards.add(gc);
@@ -160,7 +161,7 @@ class UIPlayer extends com.demodu.player.DelayedPlayer {
 						x, y,
 						game.getPlayerHand().getHeight(),
 						a,
-						app,
+						gameContext,
 						GdxCard.State.Inactive
 				)
 			);

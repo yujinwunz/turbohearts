@@ -13,24 +13,23 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.demodu.assets.AssetFactory;
+import com.demodu.assets.Assets;
 import com.demodu.gamelogic.Card;
 import com.demodu.gamelogic.GameConductor;
 import com.demodu.gamelogic.MoveReporter;
+import com.demodu.gwtcompat.Callable;
 import com.demodu.player.DelayedPlayer;
+import com.demodu.screens.ScoreScreen;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 class TurboHeartsGame extends ScreenAdapter {
-	static float BACKGROUND_COLOUR_R = 0.1f;
-	static float BACKGROUND_COLOUR_G = 0.4f;
-	static float BACKGROUND_COLOUR_B = 0.15f;
-
 	private int width = 800;
 	private int height = 480;
 
-	private TurboHearts turboHearts;
+	private GameContext gameContext;
 
 	private ArrayList<Card> playerMove;
 	private PlayerHand playerHand;
@@ -50,14 +49,14 @@ class TurboHeartsGame extends ScreenAdapter {
 	ArrayList<GdxCard> otherChargedCards = new ArrayList<GdxCard>();
 	boolean clearTableOnNextPlay = false;
 
-	TurboHeartsGame(final TurboHearts turboHearts, GameConductor gameConductor) {
-		this.turboHearts = turboHearts;
+	TurboHeartsGame(final GameContext gameContext, GameConductor gameConductor) {
+		this.gameContext = gameContext;
 		this.phase = Phase.Waiting;
 		this.playerMove = new ArrayList<Card>();
 		this.stage = new Stage(new StretchViewport(800, 480));
 		this.inputProcessor = new InputMultiplexer();
 
-		playerHand = new PlayerHand(13, 100, -50, 600, 140, turboHearts, new PlayerHand.PlayHandler() {
+		playerHand = new PlayerHand(13, 100, -50, 600, 140, gameContext, new PlayerHand.PlayHandler() {
 			@Override
 			public void play(GdxCard c) {
 				switch (phase) {
@@ -103,12 +102,12 @@ class TurboHeartsGame extends ScreenAdapter {
 
 
 		textButtonStyle = AssetFactory.makeTextButtonStyle(
-				turboHearts.manager,
-				BACKGROUND_COLOUR_R,
-				BACKGROUND_COLOUR_G,
-				BACKGROUND_COLOUR_B
+				gameContext.getManager(),
+				Assets.Colors.BACKGROUND_COLOUR_R,
+				Assets.Colors.BACKGROUND_COLOUR_G,
+				Assets.Colors.BACKGROUND_COLOUR_B
 		);
-		this.player = new UIPlayer(turboHearts, this);
+		this.player = new UIPlayer(gameContext, this);
 		gameConductor.registerPlayer(player);
 		inputProcessor.addProcessor(playerHand);
 		inputProcessor.addProcessor(stage);
@@ -244,8 +243,10 @@ class TurboHeartsGame extends ScreenAdapter {
 		});
 		table.add(chargeButton);
 		table.row();
-		Label helpTextLabel =
-				new Label(helpText, AssetFactory.makeSmallLabelStyle(turboHearts.manager, 1, 1, 0));
+		Label helpTextLabel = new Label(
+				helpText,
+				AssetFactory.makeSmallLabelStyle(gameContext.getManager(), 1, 1, 0)
+		);
 		helpTextLabel.setWrap(true);
 		table.add(helpTextLabel).fillX();
 		stage.addActor(table);
@@ -279,14 +280,14 @@ class TurboHeartsGame extends ScreenAdapter {
 	void roundEnd(int selfScore, int leftScore, int acrossScore, int rightScore) {
 		final TurboHeartsGame me = this;
 		scores.add(new ScoreScreen.RoundScore(selfScore, leftScore, acrossScore, rightScore));
-		ScoreScreen scoreScreen = new ScoreScreen(scores, turboHearts, new com.demodu.gwtcompat.Callable() {
+		ScoreScreen scoreScreen = new ScoreScreen(scores, gameContext, new Callable() {
 			@Override
 			public Object call() throws Exception {
-				turboHearts.setScreen(me);
+				gameContext.setScreen(me);
 				return null;
 			}
 		});
-		turboHearts.setScreen(scoreScreen);
+		gameContext.setScreen(scoreScreen);
 	}
 
 	void enterWaiting() {
@@ -300,19 +301,24 @@ class TurboHeartsGame extends ScreenAdapter {
 
 	@Override
 	public void render(float delta) {
-		Gdx.gl.glClearColor(BACKGROUND_COLOUR_R, BACKGROUND_COLOUR_G, BACKGROUND_COLOUR_B, 1);
+		Gdx.gl.glClearColor(
+				Assets.Colors.BACKGROUND_COLOUR_R,
+				Assets.Colors.BACKGROUND_COLOUR_G,
+				Assets.Colors.BACKGROUND_COLOUR_B,
+				1
+		);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		this.playerHand.render(delta, turboHearts.spriteBatch);
+		this.playerHand.render(delta, gameContext.getSpriteBatch());
 		stage.act();
 		stage.draw();
-		turboHearts.spriteBatch.begin();
+		gameContext.getSpriteBatch().begin();
 		for (GdxCard c : onTable) {
-			c.render(delta, turboHearts.spriteBatch);
+			c.render(delta, gameContext.getSpriteBatch());
 		}
 		for (GdxCard c : otherChargedCards) {
-			c.render(delta, turboHearts.spriteBatch);
+			c.render(delta, gameContext.getSpriteBatch());
 		}
-		turboHearts.spriteBatch.end();
+		gameContext.getSpriteBatch().end();
 		player.incrementTime(delta);
 	}
 

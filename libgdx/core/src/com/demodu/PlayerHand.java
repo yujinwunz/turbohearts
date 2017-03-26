@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.demodu.assets.Assets;
 import com.demodu.gamelogic.Card;
+import com.demodu.gwtcompat.Callable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +26,7 @@ class PlayerHand implements InputProcessor {
 			int y,
 			int width,
 			int height,
-			TurboHearts turboHearts,
+			GameContext gameContext,
 			PlayHandler playHandler
 	) {
 		this.onPlay = playHandler;
@@ -35,7 +36,7 @@ class PlayerHand implements InputProcessor {
 		this.width = width;
 		this.height = height;
 
-		TextureAtlas atlas = turboHearts.manager.get(Assets.CARD_ATLAS);
+		TextureAtlas atlas = gameContext.getManager().get(Assets.CARD_ATLAS);
 		TextureRegion region = atlas.findRegion(Assets.getCardName(Card.example));
 		cardAspectRatio = (double)region.getRegionWidth() / region.getRegionHeight();
 	}
@@ -43,7 +44,6 @@ class PlayerHand implements InputProcessor {
 	void render(float delta, SpriteBatch batch) {
 
 		batch.begin();
-		double left = x;
 		for (int i = 0; i < cards.size(); i++) {
 			cards.get(i).render(delta, batch);
 		}
@@ -52,7 +52,7 @@ class PlayerHand implements InputProcessor {
 
 	void addCard(int index, final GdxCard c) {
 		cards.add(index, c);
-		c.setOnClick(new com.demodu.gwtcompat.Callable() {
+		c.setOnClick(new Callable() {
 			@Override
 			public Object call() throws Exception {
 				onPlay.play(c);

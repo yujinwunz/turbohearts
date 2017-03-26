@@ -41,4 +41,10 @@ public class Assets {
 		public static String VSCROLL = "vscroll";
 		public static String VSCROLL_KNOB = "vscrollknob";
 	}
+
+	public static class Colors {
+		public static float BACKGROUND_COLOUR_R = 0.1f;
+		public static float BACKGROUND_COLOUR_G = 0.4f;
+		public static float BACKGROUND_COLOUR_B = 0.15f;
+	}
 }

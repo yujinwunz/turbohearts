@@ -1,4 +1,4 @@
-package com.demodu;
+package com.demodu.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -15,11 +15,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.demodu.GameContext;
 import com.demodu.assets.AssetFactory;
+import com.demodu.assets.Assets;
+import com.demodu.gwtcompat.Callable;
 
 import java.util.ArrayList;
 
-class ScoreScreen extends ScreenAdapter {
+public class ScoreScreen extends ScreenAdapter {
 	private Stage stage;
 	private BitmapFont font;
 
@@ -29,17 +32,21 @@ class ScoreScreen extends ScreenAdapter {
 		return label;
 	}
 
-	ScoreScreen(ArrayList<RoundScore> scores, TurboHearts turboHearts, final com.demodu.gwtcompat.Callable onContinue) {
+	public ScoreScreen(
+			ArrayList<RoundScore> scores,
+			GameContext gameContext,
+			final Callable onContinue
+	) {
 		stage = new Stage(new StretchViewport(800, 480));
 		Table table = new Table();
 		table.setFillParent(true);
 
-		font = turboHearts.manager.get(com.demodu.assets.Assets.FONT_SMALL);
+		font = gameContext.getManager().get(Assets.FONT_SMALL);
 		TextButton.TextButtonStyle textButtonStyle = AssetFactory.makeTextButtonStyle(
-				turboHearts.manager,
-				TurboHeartsGame.BACKGROUND_COLOUR_R,
-				TurboHeartsGame.BACKGROUND_COLOUR_G,
-				TurboHeartsGame.BACKGROUND_COLOUR_B
+				gameContext.getManager(),
+				Assets.Colors.BACKGROUND_COLOUR_R,
+				Assets.Colors.BACKGROUND_COLOUR_G,
+				Assets.Colors.BACKGROUND_COLOUR_B
 		);
 
 		float w1 = table.add(makeLabel("Player:  ")).pad(15).getPrefWidth();
@@ -70,7 +77,7 @@ class ScoreScreen extends ScreenAdapter {
 		innerTable.row().colspan(5).expand().padBottom(30);
 		innerTable.setFillParent(true);
 
-		ScrollPane.ScrollPaneStyle scrollPaneStyle = AssetFactory.makeScrollPaneStyle(turboHearts.manager);
+		ScrollPane.ScrollPaneStyle scrollPaneStyle = AssetFactory.makeScrollPaneStyle(gameContext.getManager());
 		ScrollPane scrollPane = new ScrollPane(innerTable, scrollPaneStyle);
 
 		table.add(scrollPane).colspan(5);
@@ -105,9 +112,9 @@ class ScoreScreen extends ScreenAdapter {
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClearColor(
-				TurboHeartsGame.BACKGROUND_COLOUR_R,
-				TurboHeartsGame.BACKGROUND_COLOUR_G,
-				TurboHeartsGame.BACKGROUND_COLOUR_B,
+				Assets.Colors.BACKGROUND_COLOUR_R,
+				Assets.Colors.BACKGROUND_COLOUR_G,
+				Assets.Colors.BACKGROUND_COLOUR_B,
 				1
 		);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -120,10 +127,10 @@ class ScoreScreen extends ScreenAdapter {
 		stage.getViewport().update(width, height, true);
 	}
 
-	static class RoundScore {
+	public static class RoundScore {
 		private int self, left, across, right;
 
-		RoundScore(int self, int left, int across, int right) {
+		public RoundScore(int self, int left, int across, int right) {
 			this.self = self;
 			this.left = left;
 			this.across = across;

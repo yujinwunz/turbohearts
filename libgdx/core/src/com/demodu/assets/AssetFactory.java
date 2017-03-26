@@ -21,11 +21,11 @@ public class AssetFactory {
 	) {
 		Skin buttonSkin = new Skin();
 		buttonSkin.addRegions(
-				manager.get(com.demodu.assets.Assets.BUTTON_ATLAS, TextureAtlas.class));
+				manager.get(Assets.BUTTON_ATLAS, TextureAtlas.class));
 		for (String drawableName : new String[]{
-				com.demodu.assets.Assets.Button.BUTTON_UP,
-				com.demodu.assets.Assets.Button.BUTTON_DOWN,
-				com.demodu.assets.Assets.Button.BUTTON_CHECKED
+				Assets.Button.BUTTON_UP,
+				Assets.Button.BUTTON_DOWN,
+				Assets.Button.BUTTON_CHECKED
 		}) {
 			Drawable d = buttonSkin.getDrawable(drawableName);
 			d.setBottomHeight(BUTTON_PADDING);
@@ -35,12 +35,12 @@ public class AssetFactory {
 		}
 
 		TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
-		textButtonStyle.up = buttonSkin.getDrawable(com.demodu.assets.Assets.Button.BUTTON_UP);
-		textButtonStyle.down = buttonSkin.getDrawable(com.demodu.assets.Assets.Button.BUTTON_DOWN);
+		textButtonStyle.up = buttonSkin.getDrawable(Assets.Button.BUTTON_UP);
+		textButtonStyle.down = buttonSkin.getDrawable(Assets.Button.BUTTON_DOWN);
 		textButtonStyle.checked =
-				buttonSkin.getDrawable(com.demodu.assets.Assets.Button.BUTTON_CHECKED);
+				buttonSkin.getDrawable(Assets.Button.BUTTON_CHECKED);
 		textButtonStyle.disabled =
-				buttonSkin.getDrawable(com.demodu.assets.Assets.Button.BUTTON_DOWN);
+				buttonSkin.getDrawable(Assets.Button.BUTTON_DOWN);
 		textButtonStyle.checkedFontColor =
 				new Color(r, g, b, 1);
 		textButtonStyle.downFontColor =
@@ -48,24 +48,24 @@ public class AssetFactory {
 		textButtonStyle.fontColor =
 				new Color(r, g, b, 1);
 
-		textButtonStyle.font = manager.get(com.demodu.assets.Assets.FONT_MEDIUM);
+		textButtonStyle.font = manager.get(Assets.FONT_MEDIUM);
 		return textButtonStyle;
 	}
 
 	public static ScrollPane.ScrollPaneStyle makeScrollPaneStyle(AssetManager manager) {
 		ScrollPane.ScrollPaneStyle scrollPaneStyle = new ScrollPane.ScrollPaneStyle();
 		Skin skin = new Skin();
-		skin.addRegions(manager.get(com.demodu.assets.Assets.SCROLL_ATLAS, TextureAtlas.class));
-		scrollPaneStyle.vScroll = skin.getDrawable(com.demodu.assets.Assets.Scroll.VSCROLL);
+		skin.addRegions(manager.get(Assets.SCROLL_ATLAS, TextureAtlas.class));
+		scrollPaneStyle.vScroll = skin.getDrawable(Assets.Scroll.VSCROLL);
 		scrollPaneStyle.vScrollKnob =
-				skin.getDrawable(com.demodu.assets.Assets.Scroll.VSCROLL_KNOB);
+				skin.getDrawable(Assets.Scroll.VSCROLL_KNOB);
 
 		return scrollPaneStyle;
 	}
 
 	public static Label.LabelStyle makeSmallLabelStyle(AssetManager manager, float r, float g, float b) {
 		return new Label.LabelStyle(
-				manager.get(com.demodu.assets.Assets.FONT_SMALL, BitmapFont.class),
+				manager.get(Assets.FONT_SMALL, BitmapFont.class),
 				new Color(r, g, b, 1)
 		);
 	}

@@ -7,7 +7,9 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector3;
+import com.demodu.assets.Assets;
 import com.demodu.gamelogic.Card;
+import com.demodu.gwtcompat.Callable;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -25,13 +27,13 @@ public class GdxCard extends Card {
 	private boolean isTouched;
 	HashSet<Integer> onPointers = new HashSet<Integer>();
 
-	public void setOnClick(com.demodu.gwtcompat.Callable onClick) {
+	public void setOnClick(Callable onClick) {
 		this.onClick = onClick;
 	}
 
-	com.demodu.gwtcompat.Callable onClick = null;
+	Callable onClick = null;
 
-	TurboHearts turboHearts;
+	GameContext gameContext;
 	TextureRegion region;
 
 	// z = angle
@@ -64,11 +66,11 @@ public class GdxCard extends Card {
 
 	public GdxCard(Rank rank, Suit suit,
 				   float x, float y, float height, float a,
-				   TurboHearts turboHearts,
+				   GameContext gameContext,
 				   State state) {
 		super(rank, suit);
-		this.turboHearts = turboHearts;
-		TextureAtlas atlas = turboHearts.manager.get(com.demodu.assets.Assets.CARD_ATLAS);
+		this.gameContext = gameContext;
+		TextureAtlas atlas = gameContext.getManager().get(Assets.CARD_ATLAS);
 		this.x = x;
 		this.y = y;
 		this.a = a;
@@ -80,8 +82,8 @@ public class GdxCard extends Card {
 		this.isTouched = false;
 		this.state = state;
 		TextureRegion region =
-				atlas.findRegion(com.demodu.assets.Assets.getCardName(Card.example));
-		this.region = atlas.findRegion(com.demodu.assets.Assets.getCardName(this));
+				atlas.findRegion(Assets.getCardName(Card.example));
+		this.region = atlas.findRegion(Assets.getCardName(this));
 		double aspectRatio = (double)region.getRegionWidth() / region.getRegionHeight();
 		this.width = this.height * aspectRatio;
 	}
@@ -174,7 +176,7 @@ public class GdxCard extends Card {
 
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 
-		Vector3 actual = turboHearts.camera.unproject(new Vector3(screenX, screenY, 0));
+		Vector3 actual = gameContext.getCamera().unproject(new Vector3(screenX, screenY, 0));
 		boolean retval = false;
 		if (this.renderedPolygon != null && this.renderedPolygon.contains(actual.x, actual.y)) {
 			onPointers.add(pointer);
@@ -187,7 +189,7 @@ public class GdxCard extends Card {
 	}
 
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		Vector3 actual = turboHearts.camera.unproject(new Vector3(screenX, screenY, 0));
+		Vector3 actual = gameContext.getCamera().unproject(new Vector3(screenX, screenY, 0));
 		this.onPointers.remove(pointer);
 		this.isTouched = onPointers.size() > 0;
 
@@ -211,7 +213,7 @@ public class GdxCard extends Card {
 	}
 
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		Vector3 actual = turboHearts.camera.unproject(new Vector3(screenX, screenY, 0));
+		Vector3 actual = gameContext.getCamera().unproject(new Vector3(screenX, screenY, 0));
 		boolean retval = false;
 		if (this.renderedPolygon != null && this.renderedPolygon.contains(actual.x, actual.y)) {
 			onPointers.add(pointer);

@@ -6,6 +6,7 @@ import com.demodu.gamelogic.ClientGameView;
 import com.demodu.gamelogic.GameConductor;
 import com.demodu.gamelogic.MoveReporter;
 import com.demodu.gamelogic.PlayerActor;
+import com.demodu.gwtcompat.Callable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 	@Override
 	public void getMove(final ClientGameView clientGameView, final MoveReporter reporter) {
 		endOfQueue += cardPlayDelay;
-		schedule.add(new ScheduleElement(endOfQueue, new com.demodu.gwtcompat.Callable() {
+		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() throws Exception {
 				getMoveImpl(clientGameView, reporter);
@@ -43,7 +44,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 		if (position != GameConductor.PlayerPosition.Self){
 			endOfQueue += cardPlayDelay;
 		}
-		schedule.add(new ScheduleElement(endOfQueue, new com.demodu.gwtcompat.Callable() {
+		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() throws Exception {
 				reportPlayImpl(position, card);
@@ -55,7 +56,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 	@Override
 	public void reportPass(final GameConductor.PlayerPosition position, final List<Card> cards) {
 		endOfQueue += cardPlayDelay;
-		schedule.add(new ScheduleElement(endOfQueue, new com.demodu.gwtcompat.Callable() {
+		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() throws Exception {
 				reportPassImpl(position, cards);
@@ -74,7 +75,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 		if (position != GameConductor.PlayerPosition.Self){
 			endOfQueue += cardPlayDelay;
 		}
-		schedule.add(new ScheduleElement(endOfQueue, new com.demodu.gwtcompat.Callable() {
+		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() throws Exception {
 				reportChargeImpl(position, card);
@@ -86,7 +87,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 	@Override
 	public void reportTrickEnd(final GameConductor.PlayerPosition position) {
 		endOfQueue += roundEndDelay;
-		schedule.add(new ScheduleElement(endOfQueue, new com.demodu.gwtcompat.Callable() {
+		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() throws Exception {
 				reportTrickEndImpl(position);
@@ -98,7 +99,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 	@Override
 	public void reportRoundEnd(final int score, final int leftScore, final int acrossScore, final int rightScore) {
 		endOfQueue += roundEndDelay;
-		schedule.add(new ScheduleElement(endOfQueue, new com.demodu.gwtcompat.Callable() {
+		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() throws Exception {
 				reportRoundEndImpl(score, leftScore, acrossScore, rightScore);
@@ -110,7 +111,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 	@Override
 	public void reportGameEnd(final int score, final int leftScore, final int acrossScore, final int rightScore) {
 		endOfQueue += roundEndDelay;
-		schedule.add(new ScheduleElement(endOfQueue, new com.demodu.gwtcompat.Callable() {
+		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() throws Exception {
 				reportGameEndImpl(score, leftScore, rightScore, acrossScore);
@@ -148,9 +149,9 @@ public abstract class DelayedPlayer implements PlayerActor {
 
 	private static class ScheduleElement {
 		private float triggerTime;
-		private com.demodu.gwtcompat.Callable callable;
+		private Callable callable;
 
-		public ScheduleElement(float triggerTime, com.demodu.gwtcompat.Callable callable) {
+		public ScheduleElement(float triggerTime, Callable callable) {
 			this.triggerTime = triggerTime;
 			this.callable = callable;
 		}
@@ -159,7 +160,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 			return triggerTime;
 		}
 
-		public com.demodu.gwtcompat.Callable getCallable() {
+		public Callable getCallable() {
 			return callable;
 		}
 	}
