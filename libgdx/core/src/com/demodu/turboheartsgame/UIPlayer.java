@@ -6,6 +6,7 @@ import com.demodu.gamelogic.Card;
 import com.demodu.gamelogic.ClientGameView;
 import com.demodu.gamelogic.GameConductor;
 import com.demodu.gamelogic.MoveReporter;
+import com.demodu.gwtcompat.Callable;
 import com.demodu.player.DelayedPlayer;
 
 import java.util.ArrayList;
@@ -17,9 +18,11 @@ class UIPlayer extends DelayedPlayer {
 
 	private TurboHeartsGame game;
 	private GameContext gameContext;
+	private Callable onGameEnd;
 
-	UIPlayer(GameContext gameContext, TurboHeartsGame game) {
+	UIPlayer(GameContext gameContext, TurboHeartsGame game, Callable onGameEnd) {
 		super(0.25f, 1.0f);
+		this.onGameEnd = onGameEnd;
 		this.game = game;
 		this.gameContext = gameContext;
 	}
@@ -145,13 +148,13 @@ class UIPlayer extends DelayedPlayer {
 			float x = 0, y = 0, a = 0;
 			switch (position) {
 				case Left:
-					y = game.getHeight()/2 - 30 * game.otherChargedCards.size(); a = (float)Math.PI/2;
+					y = game.getHeight()/2 + 50 + 30 * game.otherChargedCards.size(); a = (float)Math.PI/2;
 					break;
 				case Across:
 					x = game.getWidth()/2 - 30 * game.otherChargedCards.size(); y = game.getHeight();
 					break;
 				case Right:
-					y = game.getHeight()/2 + 30 * game.otherChargedCards.size(); x = game.getWidth(); a = (float)Math.PI/2;
+					y = game.getHeight()/2 + 50 + 30 * game.otherChargedCards.size(); x = game.getWidth(); a = (float)Math.PI/2;
 					break;
 			}
 
@@ -190,6 +193,6 @@ class UIPlayer extends DelayedPlayer {
 
 	@Override
 	public void reportGameEndImpl(int score, int leftScore, int acrossScore, int rightScore) {
-		// Pass
+		onGameEnd.call();
 	}
 }

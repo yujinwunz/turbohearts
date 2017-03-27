@@ -90,7 +90,13 @@ public class MultiplayerRoom extends ScreenAdapter {
 			@Override
 			public void onPlay(GameConductor gameConductor, MatchManager manager, MatchId matchId, Avatar left, Avatar across, Avatar right) {
 				// TODO: Integrate avatars and in game comm.
-				gameContext.setScreen(new TurboHeartsGame(gameContext, gameConductor));
+				gameContext.setScreen(new TurboHeartsGame(gameContext, gameConductor, new Callable() {
+					@Override
+					public Object call() {
+						onLeave.call();
+						return null;
+					}
+				}, left, across, right));
 			}
 
 			@Override
@@ -124,7 +130,7 @@ public class MultiplayerRoom extends ScreenAdapter {
 		}
 		for (int i = 0; i < players.size(); i++) {
 			playerCells[i].setActor(new Label(
-					players.get(i).getUsername(),
+					players.get(i).getDisplayName(),
 					AssetFactory.makeSmallLabelStyle(gameContext.getManager(), 1, 1, 0))
 			);
 		}

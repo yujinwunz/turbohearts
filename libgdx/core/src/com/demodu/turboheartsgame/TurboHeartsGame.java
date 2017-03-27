@@ -12,14 +12,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.demodu.*;
+import com.demodu.GameContext;
 import com.demodu.assets.AssetFactory;
 import com.demodu.assets.Assets;
+import com.demodu.crossplat.auth.Avatar;
 import com.demodu.gamelogic.Card;
 import com.demodu.gamelogic.GameConductor;
 import com.demodu.gamelogic.MoveReporter;
 import com.demodu.gwtcompat.Callable;
 import com.demodu.player.DelayedPlayer;
+import com.demodu.screens.Menu;
 import com.demodu.screens.ScoreScreen;
 
 import java.util.ArrayList;
@@ -51,13 +53,25 @@ public class TurboHeartsGame extends ScreenAdapter {
 	ArrayList<GdxCard> onTable = new ArrayList<GdxCard>();
 	ArrayList<GdxCard> otherChargedCards = new ArrayList<GdxCard>();
 	boolean clearTableOnNextPlay = false;
+	Avatar left, across, right;
 
-	public TurboHeartsGame(final GameContext gameContext, GameConductor gameConductor) {
+	public TurboHeartsGame(
+			final GameContext gameContext,
+			GameConductor gameConductor,
+			final Callable onGameEnd,
+			Avatar left,
+			Avatar across,
+			Avatar right
+	) {
 		this.gameContext = gameContext;
 		this.phase = Phase.Waiting;
 		this.playerMove = new ArrayList<Card>();
 		this.stage = new Stage(new StretchViewport(800, 480));
 		this.inputProcessor = new InputMultiplexer();
+
+		this.left = left;
+		this.across = across;
+		this.right = right;
 
 		playerHand = new PlayerHand(13, 100, -50, 600, 140, gameContext, new PlayerHand.PlayHandler() {
 			@Override
@@ -113,11 +127,41 @@ public class TurboHeartsGame extends ScreenAdapter {
 		this.background = gameContext.getManager().get(Assets.BACKGROUND);
 		background.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
-		this.player = new UIPlayer(gameContext, this);
+		this.player = new UIPlayer(gameContext, this, new Callable() {
+			@Override
+			public Object call() {
+				endGame(onGameEnd);
+				return null;
+			}
+		});
 		gameConductor.registerPlayer(player);
 		inputProcessor.addProcessor(playerHand);
 		inputProcessor.addProcessor(stage);
 		Gdx.input.setInputProcessor(inputProcessor);
+	}
+
+	private void endGame(final Callable onGameEnd) {
+		int self = 0, left = 0, across = 0, right = 0;
+		for (ScoreScreen.RoundScore r: scores){
+			self += r.getSelf();
+			left += r.getLeft();
+			across += r.getAcross();
+			right += r.getRight();
+		}
+		final String message;
+		if (left < self || across < self || right < self) {
+			message = "Better luck next time!";
+		} else {
+			message = "You won!";
+		}
+		ScoreScreen scoreScreen = new ScoreScreen(scores, gameContext, new Callable() {
+			@Override
+			public Object call() {
+				gameContext.setScreen(new Menu(message, gameContext, new Menu.MenuItem("Ok", onGameEnd)));
+				return null;
+			}
+		});
+		gameContext.setScreen(scoreScreen);
 	}
 
 	Vector2 getCoordinatesOfOpponent(GameConductor.PlayerPosition position) {
@@ -330,7 +374,13 @@ public class TurboHeartsGame extends ScreenAdapter {
 		for (GdxCard c : otherChargedCards) {
 			c.render(delta, gameContext.getSpriteBatch());
 		}
+
+		left.draw(gameContext, 0, 200, 200);
+		across.draw(gameContext, getWidth() - 300, getHeight(), 200);
+		right.draw(gameContext, getWidth() - 200, 200, 200);
+
 		gameContext.getSpriteBatch().end();
+
 		player.incrementTime(delta);
 	}
 

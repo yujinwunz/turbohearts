@@ -9,8 +9,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.demodu.GameContext;
@@ -55,7 +57,7 @@ public class MultiplayerLobby extends ScreenAdapter {
 
 		Table table = new Table();
 		table.setFillParent(true);
-		centerCell = table.add(makeLoadingWidget()).expand().colspan(2);
+		centerCell = table.add(makeLoadingWidget()).expand().colspan(3);
 		table.row();
 		this.buttonStyle = AssetFactory.makeSmallTextButtonStyle(
 				gameContext.getManager(),
@@ -74,6 +76,11 @@ public class MultiplayerLobby extends ScreenAdapter {
 			}
 		});
 		table.add(back).left().bottom();
+
+		Skin skin = gameContext.getManager().get(Assets.UI_SKIN);
+		final TextField nameTextField = new TextField(profile.getUsername() + "'s Game", skin);
+		table.add(nameTextField).right().bottom().width(300).expandX().pad(10);
+
 		Button newGame = new TextButton(
 				"Create +",
 				buttonStyle
@@ -81,7 +88,7 @@ public class MultiplayerLobby extends ScreenAdapter {
 		newGame.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				createRoom();
+				createRoom(nameTextField.getText());
 			}
 		});
 		table.add(newGame).right().bottom();
@@ -99,7 +106,6 @@ public class MultiplayerLobby extends ScreenAdapter {
 
 	private void updateLobbyList(List<LobbyEntry> lobbyList) {
 		Table lobbyTable = new Table();
-		lobbyTable.debug();
 		lobbyTable.top();
 
 		for (final LobbyEntry lobbyEntry: lobbyList) {
@@ -113,7 +119,7 @@ public class MultiplayerLobby extends ScreenAdapter {
 				if (playerList.length() > 0) {
 					playerList += ", ";
 				}
-				playerList += a.getUsername();
+				playerList += a.getDisplayName();
 			}
 			Label playerListLabel = new Label(playerList,
 					AssetFactory.makeSmallLabelStyle(gameContext.getManager(), 1, 1, 0)
@@ -157,13 +163,12 @@ public class MultiplayerLobby extends ScreenAdapter {
 		));
 	}
 
-	private void createRoom() {
-		// TODO: A create room screen.
+	private void createRoom(String roomName) {
 		gameContext.setScreen(new MultiplayerRoom(
 				gameContext,
 				lobbyManager,
 				profile,
-				new RoomOptions("Kekroom"),
+				new RoomOptions(roomName),
 				new Callable() {
 					@Override
 					public Object call() {
@@ -197,6 +202,7 @@ public class MultiplayerLobby extends ScreenAdapter {
 	@Override
 	public void show() {
 		Gdx.input.setInputProcessor(stage);
+		centerCell.setActor(makeLoadingWidget());
 		lobbyManager.enterLobby(profile, lobbyListener);
 	}
 

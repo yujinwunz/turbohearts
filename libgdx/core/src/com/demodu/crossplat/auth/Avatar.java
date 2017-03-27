@@ -1,18 +1,27 @@
 package com.demodu.crossplat.auth;
 
-/**
- * Created by yujinwunz on 26/03/2017.
- */
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.utils.Align;
+import com.demodu.GameContext;
+import com.demodu.assets.Assets;
 
 public class Avatar {
-	private String username;
+	private String displayName;
+	private BitmapFont font = null;
 
-	public String getUsername() {
-		return username;
+	public String getDisplayName() {
+		return displayName;
 	}
 
-	public Avatar(String username) {
+	public Avatar(String displayName) {
 
-		this.username = username;
+		this.displayName = displayName;
+	}
+
+	public void draw(GameContext gameContext, float x, float y, float width) {
+		if (font == null) {
+			font = gameContext.getManager().get(Assets.FONT_SMALL);
+		}
+		font.draw(gameContext.getSpriteBatch(), displayName, x, y, width, Align.center, true);
 	}
 }

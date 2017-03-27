@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
@@ -115,4 +116,10 @@ public class AssetFactory {
 		);
 	}
 
+	public static TextField.TextFieldStyle makeMediumTextFieldStyle(AssetManager manager, float r, float g, float b) {
+		TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
+		textFieldStyle.font = manager.get(Assets.FONT_MEDIUM);
+		textFieldStyle.fontColor = new Color(r, g, b, 1);
+		return textFieldStyle;
+	}
 }

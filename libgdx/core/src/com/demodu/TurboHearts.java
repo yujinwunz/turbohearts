@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.demodu.assets.Assets;
 import com.demodu.crossplat.auth.AuthManager;
+import com.demodu.crossplat.auth.Avatar;
 import com.demodu.crossplat.auth.ExampleAuthManager;
 import com.demodu.crossplat.auth.Profile;
 import com.demodu.crossplat.content.ContentManager;
@@ -15,8 +16,11 @@ import com.demodu.crossplat.lobby.LobbyManager;
 import com.demodu.gamelogic.LocalGameConductor;
 import com.demodu.gwtcompat.Callable;
 import com.demodu.player.RandomAI;
+import com.demodu.screens.LoginSelection;
 import com.demodu.screens.MainMenu;
+import com.demodu.screens.Menu;
 import com.demodu.screens.MultiplayerLobby;
+import com.demodu.screens.RegisterUsername;
 import com.demodu.turboheartsgame.TurboHeartsGame;
 
 public class TurboHearts extends Game implements GameContext {
@@ -88,28 +92,98 @@ public class TurboHearts extends Game implements GameContext {
 	}
 
 	private void singlePlayer() {
-		setScreen(new TurboHeartsGame(this, new LocalGameConductor(
-				new RandomAI(),
-				new RandomAI(),
-				new RandomAI()
-		)));
+		setScreen(new TurboHeartsGame(
+				this,
+				new LocalGameConductor(
+					new RandomAI(),
+					new RandomAI(),
+					new RandomAI()
+				),
+				new Callable() {
+					@Override
+					public Object call() {
+						startMainMenu();
+						return null;
+					}
+				},
+				new Avatar("Deep Red (Random AI)"),
+				new Avatar("Groundnet (Random AI)"),
+				new Avatar("Trapratus (Random AI)")));
+	}
+
+	private void withRegistration(final AuthManager authManager, final Callable success, final Callable fail) {
+		if (authManager.getCurrentLogin().getUsername() == null) {
+			setScreen(new RegisterUsername(TurboHearts.this, new RegisterUsername.RegisterCallback() {
+				@Override
+				public void onRegister(String username) {
+					authManager.setUsername(username, new AuthManager.LoginCallback() {
+						@Override
+						public void onFailure(String message) {
+							fail.call();
+						}
+
+						@Override
+						public void onSuccess(Profile profile) {
+							success.call();
+						}
+					});
+				}
+
+				@Override
+				public void onCancel() {
+					fail.call();
+				}
+			}));
+		} else {
+			success.call();
+		}
+	}
+
+	private void loginAndDo(AuthManager.LoginMethod loginMethod, final Callable success, final Callable fail) {
+		authManager.startLogin(loginMethod, new AuthManager.LoginCallback() {
+			@Override
+			public void onSuccess(Profile profile) {
+				withRegistration(authManager, success, fail);
+			}
+			@Override
+			public void onFailure(String message) {
+				setScreen(new Menu(
+						"Login failed: " + message,
+						TurboHearts.this,
+						new Menu.MenuItem("OK", fail))
+				);
+			}
+		});
 	}
 
 	private void withLogin(final Callable success, final Callable fail) {
 		if (authManager.getCurrentLogin() == null) {
-			// TODO: login screen
-			authManager.startLogin(AuthManager.LoginMethod.Facebook, new AuthManager.LoginCallback() {
-				@Override
-				public void onSuccess(Profile profile) {
-					success.call();
-				}
-				@Override
-				public void onFailure(String message) {
-					fail.call();
-				}
-			});
+			setScreen(new LoginSelection(this,
+					new Callable() {
+						@Override
+						public Object call() {
+							loginAndDo(AuthManager.LoginMethod.Facebook, success, fail);
+							return null;
+						}
+					},
+					new Callable() {
+						@Override
+						public Object call() {
+							loginAndDo(AuthManager.LoginMethod.Google, success, fail);
+							return null;
+						}
+					},
+					new Callable() {
+						@Override
+						public Object call() {
+							loginAndDo(AuthManager.LoginMethod.Username, success, fail);
+							return null;
+						}
+					}
+			));
+
 		} else {
-			success.call();
+			withRegistration(authManager, success, fail);
 		}
 	}
 

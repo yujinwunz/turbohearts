@@ -137,19 +137,19 @@ public class ScoreScreen extends ScreenAdapter {
 			this.right = right;
 		}
 
-		int getSelf() {
+		public int getSelf() {
 			return self;
 		}
 
-		int getLeft() {
+		public int getLeft() {
 			return left;
 		}
 
-		int getAcross() {
+		public int getAcross() {
 			return across;
 		}
 
-		int getRight() {
+		public int getRight() {
 			return right;
 		}
 	}

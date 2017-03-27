@@ -110,7 +110,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 
 	@Override
 	public void reportGameEnd(final int score, final int leftScore, final int acrossScore, final int rightScore) {
-		endOfQueue += roundEndDelay;
+		endOfQueue += 0.0; // Immediately report end of game after end of round.
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() {

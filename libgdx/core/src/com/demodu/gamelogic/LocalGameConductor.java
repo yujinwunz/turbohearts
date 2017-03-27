@@ -7,24 +7,27 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.demodu.gamelogic.GameConductor.Phase.Charging;
+import static com.demodu.gamelogic.GameConductor.Phase.Finished;
 import static com.demodu.gamelogic.GameConductor.Phase.FirstRound;
 import static com.demodu.gamelogic.GameConductor.Phase.Passing;
 import static com.demodu.gamelogic.GameConductor.Phase.Playing;
 import static com.demodu.gamelogic.GameConductor.Phase.Ready;
 import static com.demodu.gamelogic.GameConductor.Round.Left;
 
-public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
+public class LocalGameConductor extends GameConductor {
 	private Player[] players;
 	private int currentPlayer = 0;
-	private com.demodu.gamelogic.GameConductor.Phase phase = Ready;
+	private GameConductor.Phase phase = Ready;
 	private List<Card> table = new ArrayList<Card>();
-	private com.demodu.gamelogic.GameConductor.Round round = Left;
+	private GameConductor.Round round = Left;
 
 	private boolean heartsBroken;
 	private List<Card> chargedCards = new ArrayList<Card>();
-	private List<com.demodu.gamelogic.Card.Suit> playedSuits = new ArrayList<com.demodu.gamelogic.Card.Suit>();
+	private List<Card.Suit> playedSuits = new ArrayList<Card.Suit>();
 
-	public LocalGameConductor(com.demodu.gamelogic.PlayerActor left, com.demodu.gamelogic.PlayerActor across, com.demodu.gamelogic.PlayerActor right) {
+	private int numRounds = 0;
+
+	public LocalGameConductor(PlayerActor left, PlayerActor across, PlayerActor right) {
 		this.players = new Player[]{
 				new Player(null),
 				new Player(left),
@@ -34,7 +37,7 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 	}
 
 	@Override
-	public void registerPlayer(com.demodu.gamelogic.PlayerActor actor) {
+	public void registerPlayer(PlayerActor actor) {
 		players[0].actor = actor;
 		start();
 	}
@@ -44,7 +47,7 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 		playedSuits.clear();
 		chargedCards.clear();
 
-		ArrayList<Card> deck = new ArrayList<Card>(com.demodu.gamelogic.Card.getDeck());
+		ArrayList<Card> deck = new ArrayList<Card>(Card.getDeck());
 		Collections.shuffle(deck);
 
 		for (int i = 0; i < 4; i++) {
@@ -55,8 +58,8 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 		startPassing();
 	}
 
-	private com.demodu.gamelogic.ClientGameView makeClientView(int playerIndex) {
-		return new com.demodu.gamelogic.ClientGameView(
+	private ClientGameView makeClientView(int playerIndex) {
+		return new ClientGameView(
 				this.table,
 				players[playerIndex].hand,
 				phase,
@@ -71,14 +74,14 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 	private void startPassing() {
 		clearPlayerStageActions();
 		this.phase = Passing;
-		if (this.round == com.demodu.gamelogic.GameConductor.Round.NoPass) {
+		if (this.round == GameConductor.Round.NoPass) {
 			startCharging();
 		} else {
 			for (int i = 0; i < 4; i++) {
 				final int fi = i;
 				players[i].actor.getMove(
 						makeClientView(i),
-						new com.demodu.gamelogic.MoveReporter() {
+						new MoveReporter() {
 							@Override
 							protected void reportMoveImpl(List<Card> move) {
 								// Validate
@@ -156,14 +159,14 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 			if (shouldChargeAgain[i]) {
 				final int fi = i;
 				players[i].actionStage = null;
-				players[i].actor.getMove(makeClientView(i), new com.demodu.gamelogic.MoveReporter() {
+				players[i].actor.getMove(makeClientView(i), new MoveReporter() {
 					@Override
 					protected void reportMoveImpl(List<Card> move) {
 						for (Card c : move) {
 							if (!players[fi].hand.contains(c)) {
 								throw new IllegalArgumentException("Card " + c + " is not in hand");
 							}
-							if (!com.demodu.gamelogic.Card.getChargeableCards().contains(c)) {
+							if (!Card.getChargeableCards().contains(c)) {
 								throw new IllegalArgumentException("Card " + c + " is not chargeable");
 							}
 						}
@@ -210,7 +213,7 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 				}
 			}
 
-			if (hasCharged && chargedCards.size() < com.demodu.gamelogic.Card.getChargeableCards().size()) {
+			if (hasCharged && chargedCards.size() < Card.getChargeableCards().size()) {
 				startCharging(shouldChargeAgain);
 			} else {
 				startPlaying();
@@ -222,7 +225,7 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 
 		phase = FirstRound;
 		for (int i = 0; i < 4; i++) {
-			if (players[i].hand.contains(com.demodu.gamelogic.Card.TWO_OF_CLUBS)) {
+			if (players[i].hand.contains(Card.TWO_OF_CLUBS)) {
 				currentPlayer = i;
 				break;
 			}
@@ -241,13 +244,13 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 			return;
 		} else {
 			if (table.size() == 8 ||
-					table.size() == 4 && (!table.contains(new Card(com.demodu.gamelogic.Card.Rank.NINE, table.get(0).getSuit())))) {
+					table.size() == 4 && (!table.contains(new Card(Card.Rank.NINE, table.get(0).getSuit())))) {
 				// Trick ended
 				endTrick();
 			}
 		}
 
-		players[currentPlayer].actor.getMove(makeClientView(currentPlayer), new com.demodu.gamelogic.MoveReporter() {
+		players[currentPlayer].actor.getMove(makeClientView(currentPlayer), new MoveReporter() {
 			@Override
 			protected void reportMoveImpl(List<Card> move) {
 				if (move.size() != 1) {
@@ -267,7 +270,7 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 					);
 				}
 
-				if (move.get(0).getSuit() == com.demodu.gamelogic.Card.Suit.HEART) {
+				if (move.get(0).getSuit() == Card.Suit.HEART) {
 					heartsBroken = true;
 				}
 				players[currentPlayer].hand.remove(move.get(0));
@@ -280,14 +283,14 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 
 	private void endTrick() {
 		Gdx.app.log("GameConductor", "Trick has ended");
-		com.demodu.gamelogic.Card.Suit leadingSuit = table.get(0).getSuit();
+		Card.Suit leadingSuit = table.get(0).getSuit();
 		if (!playedSuits.contains(leadingSuit)) {
 			playedSuits.add(leadingSuit);
 		}
 		// Because there's always 4 or 8 cards per trick, we know that
 		// the currentPlayer is also the leader of the trick.
 		int winningPlayer = currentPlayer;
-		com.demodu.gamelogic.Card.Rank winningRank = table.get(0).getRank();
+		Card.Rank winningRank = table.get(0).getRank();
 		for (Card c : table) {
 			if (c.getRank().ordinal() > winningRank.ordinal() && c.getSuit() == leadingSuit) {
 				winningRank = c.getRank();
@@ -308,31 +311,32 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 	}
 
 	private void endRound() {
+		numRounds ++;
 		for (Player p : players) {
 			int points = 0;
 			boolean hasTenOfClubs = false;
 			int nPointCards = 0;
 			for (Card c : p.taken) {
-				if (c.equals(com.demodu.gamelogic.Card.TEN_OF_CLUBS)) {
+				if (c.equals(Card.TEN_OF_CLUBS)) {
 					hasTenOfClubs = true;
 				}
-				if (c.equals(com.demodu.gamelogic.Card.QUEEN_OF_SPADES)) {
-					points += chargedCards.contains(com.demodu.gamelogic.Card.QUEEN_OF_SPADES) ? 26 : 13;
+				if (c.equals(Card.QUEEN_OF_SPADES)) {
+					points += chargedCards.contains(Card.QUEEN_OF_SPADES) ? 26 : 13;
 					nPointCards += 1;
 				}
-				if (c.getSuit() == com.demodu.gamelogic.Card.Suit.HEART) {
-					points += chargedCards.contains(com.demodu.gamelogic.Card.ACE_OF_HEARTS) ? 2 : 1;
+				if (c.getSuit() == Card.Suit.HEART) {
+					points += chargedCards.contains(Card.ACE_OF_HEARTS) ? 2 : 1;
 					nPointCards += 1;
 				}
 			}
 			if (nPointCards == 14) {
 				points *= -1;
 			}
-			if (p.taken.contains(com.demodu.gamelogic.Card.JACK_OF_DIAMONDS)) {
-				points -= chargedCards.contains(com.demodu.gamelogic.Card.JACK_OF_DIAMONDS) ? 20 : 10;
+			if (p.taken.contains(Card.JACK_OF_DIAMONDS)) {
+				points -= chargedCards.contains(Card.JACK_OF_DIAMONDS) ? 20 : 10;
 			}
 			if (hasTenOfClubs) {
-				points *= chargedCards.contains(com.demodu.gamelogic.Card.TEN_OF_CLUBS) ? 4 : 2;
+				points *= chargedCards.contains(Card.TEN_OF_CLUBS) ? 4 : 2;
 			}
 
 			p.appendPoints(points);
@@ -349,8 +353,29 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 		for (Player p: players) {
 			p.reset();
 		}
-		round = com.demodu.gamelogic.GameConductor.Round.values()[(round.ordinal() + 1)%4];
-		start();
+		round = GameConductor.Round.values()[(round.ordinal() + 1)%4];
+
+		if (numRounds == 1) {
+			phase = Finished;
+			for (int i = 0; i < 4; i++) {
+				players[i].actor.reportGameEnd(
+						sumScores(players[i].points),
+						sumScores(players[(i + 1) % 4].points),
+						sumScores(players[(i + 2) % 4].points),
+						sumScores(players[(i + 3) % 4].points)
+				);
+			}
+		} else {
+			start();
+		}
+	}
+
+	private int sumScores(List<Integer> scores) {
+		int sum = 0;
+		for (Integer i : scores) {
+			sum += i;
+		}
+		return sum;
 	}
 
 	/**
@@ -361,8 +386,8 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 		List<Card> candidates = new ArrayList<Card>();
 		if (table.size() == 0) {
 			// Leading.
-			if (phase == com.demodu.gamelogic.GameConductor.Phase.FirstRound) {
-				return Collections.singletonList(com.demodu.gamelogic.Card.TWO_OF_CLUBS);
+			if (phase == GameConductor.Phase.FirstRound) {
+				return Collections.singletonList(Card.TWO_OF_CLUBS);
 			} else {
 				List<Card> charged = new ArrayList<Card>();
 				List<Card> hearts = new ArrayList<Card>();
@@ -372,11 +397,11 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 						if (playedSuits.contains(c.getSuit())) {
 							candidates.add(c);
 						} else {
-							if (c.getSuit() != com.demodu.gamelogic.Card.Suit.HEART || heartsBroken) {
+							if (c.getSuit() != Card.Suit.HEART || heartsBroken) {
 								charged.add(c);
 							}
 						}
-					} else if (c.getSuit() == com.demodu.gamelogic.Card.Suit.HEART && !heartsBroken) {
+					} else if (c.getSuit() == Card.Suit.HEART && !heartsBroken) {
 						hearts.add(c);
 					} else {
 						candidates.add(c);
@@ -396,9 +421,9 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 			for (Card c : players[currentPlayer].hand) {
 				if (c.getSuit() != firstCard.getSuit()) {
 					// On the first round, hearts and QoS cannot be played.
-					if (phase != com.demodu.gamelogic.GameConductor.Phase.FirstRound
-							|| (c.getSuit() != com.demodu.gamelogic.Card.Suit.HEART
-							&& !c.equals(com.demodu.gamelogic.Card.QUEEN_OF_SPADES))) {
+					if (phase != GameConductor.Phase.FirstRound
+							|| (c.getSuit() != Card.Suit.HEART
+							&& !c.equals(Card.QUEEN_OF_SPADES))) {
 						offSuit.add(c);
 					}
 				} else if (chargedCards.contains(c) && !playedSuits.contains(c.getSuit())) {
@@ -427,13 +452,13 @@ public class LocalGameConductor extends com.demodu.gamelogic.GameConductor {
 	private static class Player {
 		List<Card> hand;
 		List<Card> taken;
-		com.demodu.gamelogic.PlayerActor actor;
+		PlayerActor actor;
 		List<Integer> points;
 		// What the current player is trying to play but needs to wait for everyone to finish
 		// (charging, passing)
 		List<Card> actionStage;
 
-		Player(com.demodu.gamelogic.PlayerActor actor) {
+		Player(PlayerActor actor) {
 			this.actor = actor;
 			reset();
 		}
