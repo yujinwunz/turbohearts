@@ -10,7 +10,7 @@ import com.demodu.crossplat.auth.Profile;
 public class AndroidAuthManager implements AuthManager {
 	@Override
 	public void startLogin(LoginMethod method, LoginCallback callback) {
-		
+
 	}
 
 	@Override

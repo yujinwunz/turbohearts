@@ -29,7 +29,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 
 	@Override
 	public void getMove(final ClientGameView clientGameView, final MoveReporter reporter) {
-		endOfQueue = Math.min(endOfQueue + cardPlayDelay, currentTime);
+		endOfQueue += cardPlayDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() {
@@ -42,7 +42,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 	@Override
 	public void reportPlay(final GameConductor.PlayerPosition position, final Card card) {
 		if (position != GameConductor.PlayerPosition.Self){
-			endOfQueue = Math.min(endOfQueue + cardPlayDelay, currentTime);
+			endOfQueue += cardPlayDelay;
 		}
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
@@ -55,7 +55,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 
 	@Override
 	public void reportPass(final GameConductor.PlayerPosition position, final List<Card> cards) {
-		endOfQueue = Math.min(endOfQueue + cardPlayDelay, currentTime);
+		endOfQueue += cardPlayDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() {
@@ -73,7 +73,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 	@Override
 	public void reportCharge(final GameConductor.PlayerPosition position, final Card card) {
 		if (position != GameConductor.PlayerPosition.Self){
-			endOfQueue = Math.min(endOfQueue + cardPlayDelay, currentTime);
+			endOfQueue += cardPlayDelay;
 		}
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
@@ -86,7 +86,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 
 	@Override
 	public void reportTrickEnd(final GameConductor.PlayerPosition position) {
-		endOfQueue = Math.min(endOfQueue + roundEndDelay, currentTime);
+		endOfQueue += roundEndDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() {
@@ -98,7 +98,7 @@ public abstract class DelayedPlayer implements PlayerActor {
 
 	@Override
 	public void reportRoundEnd(final int score, final int leftScore, final int acrossScore, final int rightScore) {
-		endOfQueue = Math.min(endOfQueue + roundEndDelay, currentTime);
+		endOfQueue += roundEndDelay;
 		schedule.add(new ScheduleElement(endOfQueue, new Callable() {
 			@Override
 			public Object call() {
