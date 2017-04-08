@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "643321425618",
+    "project_id": "turbohearts-164003"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643321425618:android:1314fc5e77d9d1a5",
+        "android_client_info": {
+          "package_name": "com.demodu.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "643321425618-8s4k5gi0vd3m9ve7bjv0pnvd7eqerlsv.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "643321425618-0qe4d2mihfu5e1ut25o1b1c7ot04tgj2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.demodu.android",
+            "certificate_hash": "29cd359a1b55762caeea250f912a28e238e916c0"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4jiN-pOGhHvI2WB3iX66B9aQiH-vnExU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
