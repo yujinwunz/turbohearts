@@ -75,8 +75,6 @@ public class LoginActivity extends FragmentActivity implements GoogleApiClient.O
 			throw new IllegalStateException("Parent is not the main Android Launcher");
 		}
 
-
-
 		Log.d("LoginActivity", "handleSignInResult:" + result.isSuccess());
 		Log.d("LoginActivity", "status:" + result.getStatus());
 		if (result.isSuccess()) {

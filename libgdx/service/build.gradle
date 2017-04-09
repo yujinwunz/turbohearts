@@ -1,0 +1,12 @@
+dependencies {
+    compile project(':core')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    //compile 'com.google.oauth-client:google-oauth-client-jetty:1.22.0'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.0.pr2'
+    compile 'org.immutables:value:2.4.6'
+    compile 'org.slf4j:slf4j-simple:1.8.0-alpha0'
+    compile 'org.glassfish.jersey.containers:jersey-container-jetty-http:2.26-b03'
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"

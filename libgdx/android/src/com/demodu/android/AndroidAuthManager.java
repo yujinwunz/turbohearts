@@ -1,6 +1,7 @@
 package com.demodu.android;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 
 import com.demodu.crossplat.auth.AuthManager;
 import com.demodu.crossplat.auth.Profile;
@@ -56,7 +57,12 @@ public class AndroidAuthManager implements AuthManager {
 	}
 
 	private void fetchAndReportProfile(GoogleSignInAccount account) {
-
+		AsyncTask.execute(new Runnable() {
+			@Override
+			public void run() {
+				
+			}
+		});
 	}
 
 	protected void reportLoginResult(GoogleSignInResult result) {
