@@ -19,7 +19,7 @@ public abstract class Endpoint <Req extends ApiMessage, Res extends ApiMessage> 
 	public abstract Class<Res> getResponseType();
 
 	public Res send(Req message, String userAgent) throws IOException {
-		URL url = new URL(Config.serverDomainName, getUrl());
+		URL url = new URL(Config.SERVER_DOMAIN_NAME, getUrl());
 
 		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 		conn.setRequestProperty("User-Agent", userAgent);

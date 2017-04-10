@@ -8,11 +8,16 @@ import java.net.URL;
  */
 
 public class Config {
-	public final static URL serverDomainName;
+	public final static URL SERVER_DOMAIN_NAME;
+
+	/**
+	 * For the android app
+	 */
+	public final static String CLIENT_ID = "643321425618-0qe4d2mihfu5e1ut25o1b1c7ot04tgj2.apps.googleusercontent.com";
 
 	static {
 		try {
-			serverDomainName = new URL("127.0.0.1");
+			SERVER_DOMAIN_NAME = new URL("127.0.0.1");
 		} catch (MalformedURLException ex) {
 			throw new IllegalStateException("Server domain name is not a valid URL.");
 		}

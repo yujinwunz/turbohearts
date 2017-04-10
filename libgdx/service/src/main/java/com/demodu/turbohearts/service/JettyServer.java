@@ -5,6 +5,7 @@ import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.net.URI;
+import java.util.HashMap;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -18,6 +19,9 @@ public class JettyServer {
 		ResourceConfig config = new ResourceConfig(
 				LoginResource.class
 		);
+		config.addProperties(new HashMap<String, Object>() {{
+			put("com.sun.jersey.api.json.POJOMappingFeature", true);
+		}});
 
 		Server server = JettyHttpContainerFactory.createServer(baseUri, config);
 

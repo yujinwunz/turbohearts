@@ -1,9 +1,13 @@
 package com.demodu.turbohearts.service.api.messages;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.immutables.value.Value;
 
-
 @Value.Immutable
-public abstract class LoginRequest extends AuthenticatedRequest {
-	public abstract String getTestVal();
+@JsonSerialize(as=ImmutableLoginRequest.class)
+@JsonDeserialize(as=ImmutableLoginRequest.class)
+public abstract class LoginRequest extends ApiMessage {
+	public abstract String getIdToken();
 }
