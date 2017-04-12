@@ -35,7 +35,6 @@
         <property name="hbm2ddl.auto">create</property>
 
         <mapping class="com.demodu.turbohearts.service.models.User"/>
-        <mapping class="com.demodu.turbohearts.service.models.UserSession"/>
 
     </session-factory>
 

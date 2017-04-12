@@ -1,7 +1,7 @@
-package com.demodu.turbohearts.service.api.endpoints;
+package com.demodu.turbohearts.api.endpoints;
 
-import com.demodu.turbohearts.service.api.Config;
-import com.demodu.turbohearts.service.api.messages.ApiMessage;
+import com.demodu.turbohearts.api.Config;
+import com.demodu.turbohearts.api.messages.ApiMessage;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -20,6 +20,7 @@ public abstract class Endpoint <Req extends ApiMessage, Res extends ApiMessage> 
 
 	public Res send(Req message, String userAgent) throws IOException {
 		URL url = new URL(Config.SERVER_DOMAIN_NAME, getUrl());
+
 
 		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 		conn.setRequestProperty("User-Agent", userAgent);

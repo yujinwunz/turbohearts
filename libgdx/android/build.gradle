@@ -1,4 +1,12 @@
 android {
+    signingConfigs {
+        Debug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('/Users/yujinwunz/.android/debug.keystore')
+            storePassword 'android'
+        }
+    }
     buildToolsVersion "25.0.2"
     compileSdkVersion 25
     defaultConfig {
@@ -16,6 +24,15 @@ android {
         }
 
         instrumentTest.setRoot('tests')
+    }
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.Debug
+        }
     }
 }
 // called every time gradle gets executed, takes the native dependencies of
@@ -114,9 +131,10 @@ idea {
     }
 }
 dependencies {
-    compile project(':service')
+    compile project(':api')
     compile 'com.google.gms:google-services:3.0.0'
     compile 'com.google.android.gms:play-services:10.2.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.0.pr2'
 }
+apply plugin: 'com.google.gms.google-services'

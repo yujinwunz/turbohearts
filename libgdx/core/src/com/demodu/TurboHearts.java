@@ -1,6 +1,8 @@
 package com.demodu;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -22,6 +24,8 @@ import com.demodu.screens.Menu;
 import com.demodu.screens.MultiplayerLobby;
 import com.demodu.screens.RegisterUsername;
 import com.demodu.turboheartsgame.TurboHeartsGame;
+
+import java.util.Arrays;
 
 public class TurboHearts extends Game implements GameContext {
 
@@ -65,6 +69,11 @@ public class TurboHearts extends Game implements GameContext {
 	}
 
 	private void startMainMenu() {
+		Gdx.app.log(
+				"TurboHearts",
+				"startMainMenu called from " +
+						Arrays.toString(Thread.currentThread().getStackTrace())
+		);
 		setScreen(new MainMenu(
 				this,
 				new Callable() {
@@ -147,6 +156,7 @@ public class TurboHearts extends Game implements GameContext {
 			}
 			@Override
 			public void onFailure(String message) {
+				Gdx.app.log("TurboHearts", "login failed " + message);
 				setScreen(new Menu(
 						"Login failed: " + message,
 						TurboHearts.this,
@@ -210,6 +220,7 @@ public class TurboHearts extends Game implements GameContext {
 				new Callable() {
 					@Override
 					public Object call() {
+						Gdx.app.log("TurboHearts", "Fail callback called");
 						startMainMenu();
 						return null;
 					}
@@ -245,5 +256,11 @@ public class TurboHearts extends Game implements GameContext {
 	@Override
 	public OrthographicCamera getCamera() {
 		return camera;
+	}
+
+	@Override
+	public void setScreen(Screen screen) {
+		Gdx.app.log("TurboHearts", "Switching screen: " + screen.getClass().getCanonicalName());
+		super.setScreen(screen);
 	}
 }

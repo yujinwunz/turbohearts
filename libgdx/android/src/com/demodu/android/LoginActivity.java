@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
+import com.demodu.gwtcompat.Callable;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -67,13 +68,14 @@ public class LoginActivity extends FragmentActivity implements GoogleApiClient.O
 	}
 
 	private void handleSignInResult(GoogleSignInResult result) {
-		if (getParent() instanceof AndroidLauncher) {
-			AndroidLauncher mainApp = (AndroidLauncher) getParent();
 
-			mainApp.androidAuthManager.reportLoginResult(result);
-		} else {
-			throw new IllegalStateException("Parent is not the main Android Launcher");
-		}
+		AndroidLauncher.reporter.report(result, new Callable() {
+			@Override
+			public Object call() {
+				finish();
+				return null;
+			}
+		});
 
 		Log.d("LoginActivity", "handleSignInResult:" + result.isSuccess());
 		Log.d("LoginActivity", "status:" + result.getStatus());

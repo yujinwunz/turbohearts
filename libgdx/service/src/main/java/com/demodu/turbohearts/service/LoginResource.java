@@ -1,10 +1,11 @@
 package com.demodu.turbohearts.service;
 
-import com.demodu.turbohearts.service.api.Global;
-import com.demodu.turbohearts.service.api.messages.ImmutableLoginResponse;
-import com.demodu.turbohearts.service.api.messages.LoginRequest;
+import com.demodu.turbohearts.api.messages.ApiMessage;
+import com.demodu.turbohearts.api.messages.ImmutableLoginResponse;
+import com.demodu.turbohearts.api.messages.LoginRequest;
 import com.demodu.turbohearts.service.models.User;
 import com.demodu.turbohearts.service.models.UserSession;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 
@@ -25,7 +26,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static com.demodu.turbohearts.service.api.Global.verifier;
+import static com.demodu.turbohearts.service.Global.verifier;
 
 
 @Path("/auth")
@@ -35,18 +36,32 @@ public class LoginResource {
 	@Path("login")
 	@Consumes( { MediaType.APPLICATION_JSON })
 	@Produces( { MediaType.APPLICATION_JSON })
-	public Response login(LoginRequest request) {
+	public Response login(LoginRequest loginRequest) {
 		try {
-			GoogleIdToken idToken = verifier.verify(request.getIdToken());
+			System.out.println("Got loginRequest: " + loginRequest.toJsonString());
+		} catch (JsonProcessingException ex) {
+			System.out.println("Could not print loginRequest");
+		} catch (NullPointerException ex) {
+			System.out.println("Got null request");
+		}
+		try {
+			GoogleIdToken idToken = verifier.verify(loginRequest.getIdToken());
+			GoogleIdToken parsed = GoogleIdToken.parse(verifier.getJsonFactory(), loginRequest.getIdToken());
 
+			try {
+				System.out.println("Parsed Google Id Token: " + ApiMessage.objectMapper.writeValueAsString(parsed.getPayload()));
+			} catch (JsonProcessingException ex) {
+				System.out.print("Could not parse Google Id Token payload " + parsed.getPayload());
+			}
 
 			if (idToken != null) {
 				Payload payload = idToken.getPayload();
 
 				// Look for existing users.
 				Session session = Global.sessionFactory.openSession();
+				session.beginTransaction();
 				User user = getOrCreateSession(
-						request.getIdToken(),
+						loginRequest.getIdToken(),
 						idToken.getPayload().getSubject(),
 						session
 				).getUser();
@@ -54,7 +69,7 @@ public class LoginResource {
 				session.getTransaction().commit();
 				session.close();
 
-				if (user.getId() != idToken.getPayload().getSubject()) {
+				if (!user.getId().equals(idToken.getPayload().getSubject())) {
 					throw new GeneralSecurityException(
 								"OAuth Error: User ID does not correspond to the idToken"
 					);

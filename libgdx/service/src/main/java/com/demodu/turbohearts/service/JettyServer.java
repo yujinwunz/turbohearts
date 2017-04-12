@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 import javax.ws.rs.core.UriBuilder;
 
-import static com.demodu.turbohearts.service.api.Global.sessionFactory;
+import static com.demodu.turbohearts.service.Global.sessionFactory;
 
 /**
  * Created by yujinwunz on 9/04/2017.

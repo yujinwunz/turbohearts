@@ -3,6 +3,7 @@
 
     <string name="app_name">Turbo Hearts</string>
     <string name="signed_in_fmt">Signed in as: %s</string>
+    <string name="user_agent">android-client-v.1</string>
     <string name="server_client_id">643321425618-8s4k5gi0vd3m9ve7bjv0pnvd7eqerlsv.apps.googleusercontent.com</string>
 
 </resources>

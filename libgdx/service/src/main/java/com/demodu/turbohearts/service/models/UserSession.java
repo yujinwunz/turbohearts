@@ -3,11 +3,8 @@ package com.demodu.turbohearts.service.models;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-/**
- * Created by yujinwunz on 10/04/2017.
- */
 
 @Entity
 @Table(name= UserSession.TABLE)
@@ -27,7 +24,7 @@ public class UserSession {
 	}
 
 	@Id
-	@Column(name="idToken")
+	@Column(name="idToken",length = 1094)
 	public String getIdToken() {
 		return idToken;
 	}
@@ -36,7 +33,7 @@ public class UserSession {
 		this.idToken = idToken;
 	}
 
-	@Column(name="user")
+	@OneToOne
 	public User getUser() {
 		return user;
 	}

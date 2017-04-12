@@ -1,4 +1,4 @@
-package com.demodu.turbohearts.service.api.messages;
+package com.demodu.turbohearts.api.messages;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

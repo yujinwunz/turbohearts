@@ -1,12 +1,11 @@
-package com.demodu.turbohearts.service.api;
+package com.demodu.turbohearts.service;
 
+import com.demodu.turbohearts.api.Config;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
 import org.hibernate.SessionFactory;
-
-import java.util.Collections;
 
 
 public class Global {
@@ -19,6 +18,6 @@ public class Global {
 					Global.httpTransport,
 					JacksonFactory.getDefaultInstance()
 			)
-					.setAudience(Collections.singletonList(Config.CLIENT_ID))
+					.setAudience(Config.CLIENT_ID_LIST)
 					.build();
 }

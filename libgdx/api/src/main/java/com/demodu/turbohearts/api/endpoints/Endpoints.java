@@ -1,4 +1,4 @@
-package com.demodu.turbohearts.service.api.endpoints;
+package com.demodu.turbohearts.api.endpoints;
 
 /**
  * Utility class listing endpoint definitions. Required because static abstract methods don't exist
