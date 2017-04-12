@@ -17,7 +17,7 @@ public class Config {
 
 	static {
 		try {
-			SERVER_DOMAIN_NAME = new URL("127.0.0.1");
+			SERVER_DOMAIN_NAME = new URL("192.168.1.4");
 		} catch (MalformedURLException ex) {
 			throw new IllegalStateException("Server domain name is not a valid URL.");
 		}

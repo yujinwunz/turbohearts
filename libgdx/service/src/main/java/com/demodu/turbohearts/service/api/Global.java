@@ -4,11 +4,15 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
+import org.hibernate.SessionFactory;
+
 import java.util.Collections;
 
 
 public class Global {
 	public static final NetHttpTransport httpTransport = new NetHttpTransport();
+
+	public static SessionFactory sessionFactory;
 
 	public static final GoogleIdTokenVerifier verifier =
 			new GoogleIdTokenVerifier.Builder(
