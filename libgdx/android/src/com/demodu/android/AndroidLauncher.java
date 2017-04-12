@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.demodu.TurboHearts;
@@ -17,8 +16,6 @@ public class AndroidLauncher extends AndroidApplication {
 
 	public static LoginResultReporter reporter;
 
-	protected AndroidAuthManager androidAuthManager = new AndroidAuthManager(this);
-
 	public AndroidLauncher() {
 		super();
 		Log.d("AndroidLauncher", "Constructed");
@@ -28,30 +25,12 @@ public class AndroidLauncher extends AndroidApplication {
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+		AndroidAuthManager androidAuthManager = new AndroidAuthManager(this);
 		initialize(new TurboHearts(
 				androidAuthManager,
 				new ExampleContentManager(),
-				new ExampleLobbyManager()
+				new AndroidLobbyManager()
 		), config);
-		Gdx.app.log("AndroidApplication", "onCreate called");
-
-		Gdx.app.addLifecycleListener(new LifecycleListener() {
-			@Override
-			public void pause() {
-				Gdx.app.log("App", "Pausing");
-			}
-
-			@Override
-			public void resume() {
-				Gdx.app.log("App", "Resume");
-			}
-
-			@Override
-			public void dispose() {
-				Gdx.app.log("App", "Dispose");
-			}
-		});
-
 	}
 
 	@Override
