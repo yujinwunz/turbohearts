@@ -124,8 +124,8 @@ public class TurboHearts extends Game implements GameContext {
 		if (authManager.getCurrentLogin().getUsername() == null) {
 			setScreen(new RegisterUsername(TurboHearts.this, new RegisterUsername.RegisterCallback() {
 				@Override
-				public void onRegister(String username) {
-					authManager.setUsername(username, new AuthManager.LoginCallback() {
+				public void onRegister(String username, String displayName) {
+					authManager.register(username, displayName, new AuthManager.LoginCallback() {
 						@Override
 						public void onFailure(String message) {
 							fail.call();

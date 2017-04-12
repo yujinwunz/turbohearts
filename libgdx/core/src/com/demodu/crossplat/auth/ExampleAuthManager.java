@@ -30,7 +30,7 @@ public class ExampleAuthManager implements AuthManager {
 	}
 
 	@Override
-	public void setUsername(final String username, final LoginCallback callback) {
+	public void register(final String username, String displayName, final LoginCallback callback) {
 		if (currentProfile == null) {
 			throw new NullPointerException("Not logged in");
 		} else if (currentProfile.getUsername() != null) {

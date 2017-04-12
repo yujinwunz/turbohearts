@@ -1,13 +1,15 @@
 package com.demodu.turbohearts.api.endpoints;
 
 import com.demodu.turbohearts.api.messages.LoginRequest;
-import com.demodu.turbohearts.api.messages.LoginResponse;
+import com.demodu.turbohearts.api.messages.ProfileResponse;
 
 
-public class LoginEndpoint extends Endpoint<LoginRequest, LoginResponse> {
+public class LoginEndpoint extends Endpoint<LoginRequest, ProfileResponse> {
 	public static final String PATH = "auth/login";
-	public static final Class requestType = LoginRequest.class;
-	public static final Class responseType = LoginResponse.class;
+	public static final Class REQUEST_TYPE = LoginRequest.class;
+	public static final Class RESPONSE_TYPE = ProfileResponse.class;
+
+	LoginEndpoint() {} // Not publicly initializable.
 
 	@Override
 	public String getUrl() {
@@ -16,11 +18,11 @@ public class LoginEndpoint extends Endpoint<LoginRequest, LoginResponse> {
 
 	@Override
 	public Class<LoginRequest> getRequestType() {
-		return requestType;
+		return REQUEST_TYPE;
 	}
 
 	@Override
-	public Class<LoginResponse> getResponseType() {
-		return responseType;
+	public Class<ProfileResponse> getResponseType() {
+		return RESPONSE_TYPE;
 	}
 }

@@ -9,9 +9,9 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 
 @Value.Immutable
-@JsonSerialize(as=ImmutableLoginResponse.class)
-@JsonDeserialize(as=ImmutableLoginResponse.class)
-public abstract class LoginResponse extends ApiMessage {
+@JsonSerialize(as=ImmutableProfileResponse.class)
+@JsonDeserialize(as=ImmutableProfileResponse.class)
+public abstract class ProfileResponse extends ApiMessage {
 
 	public abstract boolean getSuccess();
 

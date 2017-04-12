@@ -37,15 +37,20 @@ public class RegisterUsername extends ScreenAdapter {
 		Skin skin = gameContext.getManager().get(Assets.UI_SKIN);
 
 		final TextField usernameField = new TextField("", skin);
+		final TextField displayNameField = new TextField("", skin);
 		Label usernameLabel = new Label(
 				"Username:",
 				AssetFactory.makeSmallLabelStyle(gameContext.getManager(), 1, 1, 0)
 		);
+		Label displayNameLabel = new Label(
+				"displayName:",
+				AssetFactory.makeSmallLabelStyle(gameContext.getManager(), 1, 1, 0)
+		);
 		Label titleLabel = new Label(
-				"One last step...\nchoose a username!",
+				"One last step... choose a\nusername and display name!",
 				AssetFactory.makeMediumLabelStyle(gameContext.getManager(), 1, 1, 0)
 		);
-		Button registerButton = new TextButton(
+		final Button registerButton = new TextButton(
 				"Register",
 				AssetFactory.makeMediumTextButtonStyle(gameContext.getManager(),
 						Assets.Colors.BACKGROUND_COLOUR_R,
@@ -53,14 +58,8 @@ public class RegisterUsername extends ScreenAdapter {
 						Assets.Colors.BACKGROUND_COLOUR_B
 				)
 		);
-		registerButton.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				registerCallback.onRegister(usernameField.getText());
-			}
-		});
 
-		Button cancelButton = new TextButton(
+		final Button cancelButton = new TextButton(
 				"Cancel",
 				AssetFactory.makeMediumTextButtonStyle(gameContext.getManager(),
 						Assets.Colors.BACKGROUND_COLOUR_R,
@@ -68,6 +67,16 @@ public class RegisterUsername extends ScreenAdapter {
 						Assets.Colors.BACKGROUND_COLOUR_B
 				)
 		);
+
+		registerButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				registerButton.setDisabled(true);
+				cancelButton.setDisabled(true);
+				registerCallback.onRegister(usernameField.getText(), displayNameField.getText());
+			}
+		});
+
 		cancelButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
@@ -79,6 +88,9 @@ public class RegisterUsername extends ScreenAdapter {
 		table.row().pad(60);
 		table.add(usernameLabel);
 		table.add(usernameField).width(200);
+		table.row().pad(20);
+		table.add(displayNameLabel);
+		table.add(displayNameField).width(200);
 		table.row().pad(60);
 
 		table.add(cancelButton);
@@ -113,7 +125,7 @@ public class RegisterUsername extends ScreenAdapter {
 
 
 	public interface RegisterCallback {
-		void onRegister(String username);
+		void onRegister(String username, String displayName);
 		void onCancel();
 	}
 }

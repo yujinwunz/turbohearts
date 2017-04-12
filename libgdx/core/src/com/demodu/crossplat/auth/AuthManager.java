@@ -7,7 +7,7 @@ package com.demodu.crossplat.auth;
 public interface AuthManager {
 	void startLogin(LoginMethod method, LoginCallback callback);
 	Profile getCurrentLogin();
-	void setUsername(String username, LoginCallback callback);
+	void register(String username, String displayName, LoginCallback callback);
 	void updateDisplayName(String displayName, LoginCallback callback);
 
 	interface LoginCallback {

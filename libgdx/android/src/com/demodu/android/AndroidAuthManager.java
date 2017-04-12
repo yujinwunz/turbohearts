@@ -11,8 +11,10 @@ import com.demodu.crossplat.auth.Profile;
 import com.demodu.gwtcompat.Callable;
 import com.demodu.turbohearts.api.endpoints.Endpoints;
 import com.demodu.turbohearts.api.messages.ImmutableLoginRequest;
+import com.demodu.turbohearts.api.messages.ImmutableRegisterRequest;
 import com.demodu.turbohearts.api.messages.LoginRequest;
-import com.demodu.turbohearts.api.messages.LoginResponse;
+import com.demodu.turbohearts.api.messages.ProfileResponse;
+import com.demodu.turbohearts.api.messages.RegisterRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -24,6 +26,7 @@ public class AndroidAuthManager implements AuthManager {
 	private AndroidLauncher context;
 	private LoginCallback loginCallback;
 	private Profile profile;
+	private GoogleSignInResult googleSignInResult;
 
 	public AndroidAuthManager(AndroidLauncher context) {
 		this.context = context;
@@ -55,8 +58,51 @@ public class AndroidAuthManager implements AuthManager {
 	}
 
 	@Override
-	public void setUsername(String username, LoginCallback callback) {
+	public void register(final String username, final String displayName, final LoginCallback callback) {
+		AsyncTask.execute(new Runnable() {
+			@Override
+			public void run() {
+				if (googleSignInResult == null || googleSignInResult.getSignInAccount() == null) {
+					context.postRunnable(new Runnable() {
+						@Override
+						public void run() {
+							callback.onFailure("Cannot register: Not logged in to OAuth");
+						}
+					});
+					return;
+				}
+				GoogleSignInAccount account = googleSignInResult.getSignInAccount();
+				RegisterRequest request = ImmutableRegisterRequest
+						.builder()
+						.authToken(account.getIdToken())
+						.displayName(displayName)
+						.userName(username)
+						.build();
 
+				try {
+					ProfileResponse response = Endpoints.registerEndpoint.send(
+							request,
+							context.getString(R.string.user_agent)
+					);
+					profile = new Profile(new Avatar(response.displayName()), response.getUsername());
+					context.postRunnable(
+							new Runnable() {
+								@Override
+								public void run() {
+									loginCallback.onSuccess(profile);
+								}
+							}
+					);
+				} catch (IOException ex) {
+					context.postRunnable(new Runnable() {
+						@Override
+						public void run() {
+							loginCallback.onFailure("Could not connect to the registration server");
+						}
+					});
+				}
+			}
+		});
 	}
 
 	@Override
@@ -80,7 +126,7 @@ public class AndroidAuthManager implements AuthManager {
 						.build();
 				try {
 					Log.d("AndroidAuthManager", "sending out response");
-					final LoginResponse response = Endpoints.loginEndpoint.send(
+					final ProfileResponse response = Endpoints.loginEndpoint.send(
 							request,
 							context.getString(R.string.user_agent)
 					);
@@ -127,6 +173,8 @@ public class AndroidAuthManager implements AuthManager {
 	}
 
 	protected void reportLoginResult(final GoogleSignInResult result, Callable onFinish) {
+		this.googleSignInResult = result;
+		result.getSignInAccount().getServerAuthCode();
 		if (result.isSuccess()) {
 			fetchAndReportProfile(result.getSignInAccount(), onFinish);
 		} else {

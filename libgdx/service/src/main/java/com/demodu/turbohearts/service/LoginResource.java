@@ -1,11 +1,10 @@
 package com.demodu.turbohearts.service;
 
-import com.demodu.turbohearts.api.messages.ApiMessage;
-import com.demodu.turbohearts.api.messages.ImmutableLoginResponse;
+import com.demodu.turbohearts.api.messages.ImmutableProfileResponse;
 import com.demodu.turbohearts.api.messages.LoginRequest;
+import com.demodu.turbohearts.api.messages.RegisterRequest;
 import com.demodu.turbohearts.service.models.User;
 import com.demodu.turbohearts.service.models.UserSession;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 
@@ -37,22 +36,9 @@ public class LoginResource {
 	@Consumes( { MediaType.APPLICATION_JSON })
 	@Produces( { MediaType.APPLICATION_JSON })
 	public Response login(LoginRequest loginRequest) {
-		try {
-			System.out.println("Got loginRequest: " + loginRequest.toJsonString());
-		} catch (JsonProcessingException ex) {
-			System.out.println("Could not print loginRequest");
-		} catch (NullPointerException ex) {
-			System.out.println("Got null request");
-		}
+
 		try {
 			GoogleIdToken idToken = verifier.verify(loginRequest.getIdToken());
-			GoogleIdToken parsed = GoogleIdToken.parse(verifier.getJsonFactory(), loginRequest.getIdToken());
-
-			try {
-				System.out.println("Parsed Google Id Token: " + ApiMessage.objectMapper.writeValueAsString(parsed.getPayload()));
-			} catch (JsonProcessingException ex) {
-				System.out.print("Could not parse Google Id Token payload " + parsed.getPayload());
-			}
 
 			if (idToken != null) {
 				Payload payload = idToken.getPayload();
@@ -71,11 +57,11 @@ public class LoginResource {
 
 				if (!user.getId().equals(idToken.getPayload().getSubject())) {
 					throw new GeneralSecurityException(
-								"OAuth Error: User ID does not correspond to the idToken"
+								"OAuth Error: User ID does not correspond to a valid IdToken. Either Google has made an error or there's a mismatch in the session -> user mapping"
 					);
 				}
 
-				return Response.ok(ImmutableLoginResponse
+				return Response.ok(ImmutableProfileResponse
 						.builder()
 						.success(true)
 						.username(user.getUsername())
@@ -85,7 +71,7 @@ public class LoginResource {
 
 			} else {
 				return Response.ok(
-						ImmutableLoginResponse
+						ImmutableProfileResponse
 						.builder()
 						.success(false)
 						.errorMessage("Username or password incorrect")
@@ -131,6 +117,27 @@ public class LoginResource {
 		User user = new User(id, null, null);
 		session.save(user);
 		return user;
+	}
+
+	@POST
+	@Path("register")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response register(RegisterRequest registerRequest) {
+		return AuthHelpers.withLoginAndDb(registerRequest, (UserSession userSession, Session session) -> {
+			User user = userSession.getUser();
+			user.setDisplayName(registerRequest.getDisplayName());
+			user.setUsername(registerRequest.getUserName());
+			session.save(user);
+
+			return Response.status(200).entity(ImmutableProfileResponse
+					.builder()
+					.success(true)
+					.displayName(user.getDisplayName())
+					.username(user.getUsername())
+					.build()
+			).build();
+		});
 	}
 
 	@GET
