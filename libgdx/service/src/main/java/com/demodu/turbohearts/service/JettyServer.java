@@ -21,7 +21,7 @@ import static com.demodu.turbohearts.service.Global.sessionFactory;
 public class JettyServer {
 
 	public static final int BACKGROUND_THREADS = 2;
-	public static EventPipeline eventPipeline;
+	public static EventBus eventBus;
 
 	public static void main(String args[]) {
 		setUpHibernate();
@@ -32,17 +32,19 @@ public class JettyServer {
 	}
 
 	private static void setupEventPipeline() {
-		eventPipeline = new EventPipeline();
+		eventBus = new EventBus();
 		for (int i = 0; i < BACKGROUND_THREADS; i++) {
-			eventPipeline.startWorkerThread();
+			eventBus.startWorkerThread();
 		}
 	}
 
 	private static void setUpAndStartServer() {
 		URI baseUri = UriBuilder.fromUri("http://localhost/").port(8080).build();
 		ResourceConfig config = new ResourceConfig(
-				LoginResource.class
+				LoginResource.class,
+				new LobbyResource(eventBus).getResourceClass()
 		);
+
 		config.addProperties(new HashMap<String, Object>() {{
 			put("com.sun.jersey.api.json.POJOMappingFeature", true);
 		}});

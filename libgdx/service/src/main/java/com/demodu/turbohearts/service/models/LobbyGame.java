@@ -17,6 +17,7 @@ public class LobbyGame {
 	public static final String TABLE = "Lobby";
 
 	private int id;
+	private int version;
 	private String name;
 	private Set<User> players;
 
@@ -24,9 +25,19 @@ public class LobbyGame {
 		// Just for you, Hibernate <3
 	}
 
-	public LobbyGame(String name, Set<User> players) {
+	public LobbyGame(String name, Set<User> players, int version) {
 		this.name = name;
 		this.players = players;
+		this.version = version;
+	}
+
+	@Column(name="version")
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
 	}
 
 	@Id

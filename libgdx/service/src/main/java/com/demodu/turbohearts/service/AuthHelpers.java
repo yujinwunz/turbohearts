@@ -13,6 +13,7 @@ import java.util.List;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
+import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Response;
 
 import static com.demodu.turbohearts.service.Global.verifier;
@@ -54,6 +55,17 @@ public class AuthHelpers {
 			return Response.status(500).entity("Cannot connect to OAuth Login").build();
 		} catch (GeneralSecurityException ex) {
 			return Response.status(401).build();
+		}
+	}
+
+	public static void withLoginAndDbAsync(
+			AuthenticatedRequest request,
+			AsyncResponse response,
+			PrivilegedTask privilegedTask
+	) {
+		Response immediateResponse = withLoginAndDb(request, privilegedTask);
+		if (immediateResponse != null) {
+			response.resume(immediateResponse);
 		}
 	}
 

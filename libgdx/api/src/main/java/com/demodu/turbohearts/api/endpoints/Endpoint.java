@@ -11,12 +11,28 @@ import java.net.URL;
  * Created by yujinwunz on 9/04/2017.
  */
 
-public abstract class Endpoint <Req extends ApiMessage, Res extends ApiMessage> {
-	public abstract String getUrl();
+public class Endpoint <Req extends ApiMessage, Res extends ApiMessage> {
+	private String url;
+	private Class<Req> requestType;
+	private Class<Res> responseType;
+
+	public Endpoint(String url, Class<Req> requestType, Class<Res> responseType) {
+		this.url = url;
+		this.requestType = requestType;
+		this.responseType = responseType;
+	}
+
+	public String getUrl() {
+		return url;
+	}
 
 	// Required due to type erasure
-	public abstract Class<Req> getRequestType();
-	public abstract Class<Res> getResponseType();
+	public Class<Req> getRequestType() {
+		return requestType;
+	}
+	public Class<Res> getResponseType() {
+		return responseType;
+	}
 
 	public Res send(Req message, String userAgent) throws IOException {
 		URL url = new URL(Config.SERVER_DOMAIN_NAME, getUrl());
@@ -34,5 +50,11 @@ public abstract class Endpoint <Req extends ApiMessage, Res extends ApiMessage> 
 		} else {
 			throw new IOException("Could not read response");
 		}
+	}
+
+	public static <Req extends ApiMessage, Res extends ApiMessage> Endpoint<Req, Res>
+		create(String url, Class<Req> requestType, Class<Res> responseType) {
+
+		return new Endpoint<Req, Res>(url, requestType, responseType);
 	}
 }
