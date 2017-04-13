@@ -3,7 +3,6 @@ package com.demodu.turbohearts.api.messages;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.util.List;
 
 import org.immutables.value.Value;
 
@@ -22,7 +21,7 @@ public abstract class RoomResponse extends ApiMessage {
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public abstract Room getRoom();
+	public abstract LobbyListResponse.LobbyRoom getRoom();
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -37,14 +36,5 @@ public abstract class RoomResponse extends ApiMessage {
 		UpdateRoom,
 		StartGame,
 		LeaveRoom
-	}
-
-	@Value.Immutable
-	@JsonSerialize(as=ImmutableRoom.class)
-	@JsonDeserialize(as=ImmutableRoom.class)
-	public static abstract class Room {
-		public abstract int getId();
-		public abstract int getVersion();
-		public abstract List<String> getPlayers();
 	}
 }

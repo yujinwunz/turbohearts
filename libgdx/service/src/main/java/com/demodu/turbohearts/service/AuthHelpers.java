@@ -61,9 +61,13 @@ public class AuthHelpers {
 	public static void withLoginAndDbAsync(
 			AuthenticatedRequest request,
 			AsyncResponse response,
-			PrivilegedTask privilegedTask
+			AsyncPrivilegedTask asyncPrivilegedTask
 	) {
-		Response immediateResponse = withLoginAndDb(request, privilegedTask);
+		Response immediateResponse =
+				withLoginAndDb(request, (UserSession userSession, Session session) -> {
+					asyncPrivilegedTask.run(userSession, session);
+					return null;
+				});
 		if (immediateResponse != null) {
 			response.resume(immediateResponse);
 		}
@@ -71,5 +75,9 @@ public class AuthHelpers {
 
 	public interface PrivilegedTask {
 		Response run(UserSession userSession, Session session);
+	}
+
+	public interface AsyncPrivilegedTask {
+		void run(UserSession userSession, Session session);
 	}
 }

@@ -1,7 +1,12 @@
 package com.demodu.turbohearts.service.models;
 
+import com.demodu.turbohearts.api.messages.ImmutableLobbyRoom;
+import com.demodu.turbohearts.api.messages.LobbyListResponse;
+
 import org.hibernate.annotations.GenericGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -12,8 +17,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
-@Table(name=LobbyGame.TABLE)
-public class LobbyGame {
+@Table(name= LobbyRoom.TABLE)
+public class LobbyRoom {
 	public static final String TABLE = "Lobby";
 
 	private int id;
@@ -21,11 +26,11 @@ public class LobbyGame {
 	private String name;
 	private Set<User> players;
 
-	public LobbyGame() {
+	public LobbyRoom() {
 		// Just for you, Hibernate <3
 	}
 
-	public LobbyGame(String name, Set<User> players, int version) {
+	public LobbyRoom(String name, Set<User> players, int version) {
 		this.name = name;
 		this.players = players;
 		this.version = version;
@@ -67,5 +72,21 @@ public class LobbyGame {
 
 	public void setPlayers(Set<User> players) {
 		this.players = players;
+	}
+
+	// Some utility methods
+	public LobbyListResponse.LobbyRoom toApi () {
+		List<String> players = new ArrayList<>();
+		for (User u : getPlayers()) {
+			players.add(u.getDisplayName());
+		}
+		LobbyListResponse.LobbyRoom item = ImmutableLobbyRoom
+				.builder()
+				.addAllPlayerNames(players)
+				.title(getName())
+				.id(getId())
+				.version(getVersion())
+				.build();
+		return item;
 	}
 }

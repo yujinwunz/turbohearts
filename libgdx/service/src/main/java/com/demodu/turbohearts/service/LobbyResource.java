@@ -1,14 +1,20 @@
 package com.demodu.turbohearts.service;
 
+import com.demodu.turbohearts.api.messages.CreateRoomRequest;
 import com.demodu.turbohearts.api.messages.ImmutableLobbyListResponse;
+import com.demodu.turbohearts.api.messages.ImmutableRoomResponse;
 import com.demodu.turbohearts.api.messages.LobbyListRequest;
-import com.demodu.turbohearts.api.messages.RoomRequest;
+import com.demodu.turbohearts.api.messages.LobbyListResponse;
+import com.demodu.turbohearts.api.messages.RoomResponse;
+import com.demodu.turbohearts.service.events.ImmutableLobbyListUpdate;
 import com.demodu.turbohearts.service.events.LobbyListUpdate;
-import com.demodu.turbohearts.service.models.LobbyGame;
+import com.demodu.turbohearts.service.models.LobbyRoom;
 import com.demodu.turbohearts.service.models.UserSession;
 
 import org.hibernate.Session;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -54,7 +60,7 @@ public class LobbyResource {
 						asyncResponse.resume(Response.ok(200).entity(
 								ImmutableLobbyListResponse
 										.builder()
-										.lobbyList(event.getLobbyGames())
+										.lobbyList(event.getLobbyRooms())
 										.revision(event.getVersion())
 										.build()
 						).build());
@@ -64,25 +70,45 @@ public class LobbyResource {
 					}
 				});
 				fireLobbyListEvent(session);
-
-				// The response will be handled by the event queue.
-				return null;
 			});
 		}
 
-		@Path("room")
+		@Path("room/create")
 		@Consumes(MediaType.APPLICATION_JSON)
 		@Produces(MediaType.APPLICATION_JSON)
-		public void room(RoomRequest request, @Suspended final AsyncResponse asyncResponse) {
+		public void createRoom(CreateRoomRequest request, @Suspended final AsyncResponse asyncResponse) {
 			AuthHelpers.withLoginAndDbAsync(request, asyncResponse, (UserSession userSession, Session session) -> {
+				LobbyRoom lobbyRoom = new LobbyRoom(request.getName(), Collections.emptySet(), 0);
+				session.save(lobbyRoom);
 
+				asyncResponse.resume(Response.status(200).entity(
+						ImmutableRoomResponse
+						.builder()
+						.updateType(RoomResponse.UpdateType.EnteredRoom)
+						.room(lobbyRoom.toApi())
+						.build()
+				));
+
+				session.getTransaction().commit();
+
+				fireLobbyListEvent(session);
 			});
 		}
 
 		private void fireLobbyListEvent(Session session) {
 
-			List<LobbyGame> lobbyGames =
-					session.createQuery("from " + LobbyGame.TABLE, LobbyGame.class).list();
+			List<LobbyRoom> lobbyRooms =
+					session.createQuery("from " + LobbyRoom.TABLE, LobbyRoom.class).list();
+			List<LobbyListResponse.LobbyRoom> apiList = new ArrayList<>();
+			for (LobbyRoom room : lobbyRooms) {
+				apiList.add(room.toApi());
+			}
+			eventBus.fireEvent(ImmutableLobbyListUpdate
+					.builder()
+					.version(getVersion())
+					.lobbyRooms(apiList)
+					.build()
+			);
 		}
 
 	}

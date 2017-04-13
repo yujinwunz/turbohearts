@@ -13,7 +13,7 @@ import java.util.List;
 @JsonDeserialize(as=ImmutableLobbyListUpdate.class)
 public abstract class LobbyListUpdate extends Event {
 	public abstract int getVersion();
-	public abstract List<LobbyListResponse.LobbyGame> getLobbyGames();
+	public abstract List<LobbyListResponse.LobbyRoom> getLobbyRooms();
 
 	@Override
 	public Class<LobbyListUpdate> getEventClass() {
