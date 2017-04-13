@@ -20,10 +20,22 @@ import static com.demodu.turbohearts.service.Global.sessionFactory;
 
 public class JettyServer {
 
+	public static final int BACKGROUND_THREADS = 2;
+	public static EventPipeline eventPipeline;
+
 	public static void main(String args[]) {
 		setUpHibernate();
 
+		setupEventPipeline();
+
 		setUpAndStartServer();
+	}
+
+	private static void setupEventPipeline() {
+		eventPipeline = new EventPipeline();
+		for (int i = 0; i < BACKGROUND_THREADS; i++) {
+			eventPipeline.startWorkerThread();
+		}
 	}
 
 	private static void setUpAndStartServer() {

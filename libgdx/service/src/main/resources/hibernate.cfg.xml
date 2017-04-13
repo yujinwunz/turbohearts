@@ -34,6 +34,7 @@
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">create</property>
 
+        <mapping class="com.demodu.turbohearts.service.models.LobbyGame"/>
         <mapping class="com.demodu.turbohearts.service.models.User"/>
         <mapping class="com.demodu.turbohearts.service.models.UserSession"/>
 
