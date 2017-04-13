@@ -27,26 +27,31 @@ public class AuthHelpers {
 		try {
 			GoogleIdToken idToken = verifier.verify(request.getAuthToken());
 			if (idToken == null) {
-				return Response.status(401).build();
+				return Response.status(401).entity("Id token null").build();
 			} else {
+
+				Response result = null;
 				Session session = Global.sessionFactory.openSession();
-				CriteriaBuilder builder = session.getCriteriaBuilder();
-				CriteriaQuery<UserSession> criteriaQuery = builder.createQuery(UserSession.class);
-				Expression idTokenExpr = criteriaQuery.from(UserSession.class).get("idToken");
-				criteriaQuery.where(builder.equal(idTokenExpr, request.getAuthToken()));
-
-				List<UserSession> results = session.createQuery(criteriaQuery).list();
-				if (results.size() == 0) {
-					return Response.status(401).build();
-				}
-				if (results.get(0).getUser() == null) {
-					return Response.status(401).build();
-				}
-
 				session.beginTransaction();
-				Response result = task.run(results.get(0), session);
-				session.getTransaction().commit();
-				session.close();
+				try {
+					CriteriaBuilder builder = session.getCriteriaBuilder();
+					CriteriaQuery<UserSession> criteriaQuery = builder.createQuery(UserSession.class);
+					Expression idTokenExpr = criteriaQuery.from(UserSession.class).get("idToken");
+					criteriaQuery.where(builder.equal(idTokenExpr, request.getAuthToken()));
+
+					List<UserSession> results = session.createQuery(criteriaQuery).list();
+					if (results.size() == 0) {
+						result = Response.status(401).entity("invalid session").build();
+					} else if (results.get(0).getUser() == null) {
+						result = Response.status(401).entity("user not found").build();
+					} else {
+						result = task.run(results.get(0), session);
+					}
+					session.getTransaction().commit();
+				} finally {
+					session.close();
+				}
+
 				return result;
 			}
 
@@ -54,7 +59,7 @@ public class AuthHelpers {
 		} catch (IOException ex) {
 			return Response.status(500).entity("Cannot connect to OAuth Login").build();
 		} catch (GeneralSecurityException ex) {
-			return Response.status(401).build();
+			return Response.status(401).entity("Unknown security error").build();
 		}
 	}
 
@@ -69,6 +74,7 @@ public class AuthHelpers {
 					return null;
 				});
 		if (immediateResponse != null) {
+			System.out.println("Async gave immediate response: " + immediateResponse + immediateResponse.getEntity());
 			response.resume(immediateResponse);
 		}
 	}

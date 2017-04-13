@@ -37,7 +37,6 @@ public class Endpoint <Req extends ApiMessage, Res extends ApiMessage> {
 	public Res send(Req message, String userAgent) throws IOException {
 		URL url = new URL(Config.SERVER_DOMAIN_NAME, getUrl());
 
-
 		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 		conn.setRequestProperty("User-Agent", userAgent);
 		conn.setRequestProperty("content-type", "application/json");
@@ -49,7 +48,7 @@ public class Endpoint <Req extends ApiMessage, Res extends ApiMessage> {
 			return Res.objectMapper.readValue(conn.getInputStream(), getResponseType());
 		} else {
 			throw new IOException("Could not read response");
-		}
+			}
 	}
 
 	public static <Req extends ApiMessage, Res extends ApiMessage> Endpoint<Req, Res>

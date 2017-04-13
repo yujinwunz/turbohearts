@@ -42,7 +42,7 @@ public class JettyServer {
 		URI baseUri = UriBuilder.fromUri("http://localhost/").port(8080).build();
 		ResourceConfig config = new ResourceConfig(
 				LoginResource.class,
-				new LobbyResource(eventBus).getResourceClass()
+				LobbyResource.class
 		);
 
 		config.addProperties(new HashMap<String, Object>() {{

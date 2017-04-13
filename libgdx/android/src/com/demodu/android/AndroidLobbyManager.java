@@ -1,7 +1,5 @@
 package com.demodu.android;
 
-import android.os.AsyncTask;
-
 import com.badlogic.gdx.Gdx;
 import com.demodu.crossplat.auth.Avatar;
 import com.demodu.crossplat.auth.Profile;
@@ -22,7 +20,7 @@ public class AndroidLobbyManager implements LobbyManager {
 	private AndroidAuthManager androidAuthManager;
 	private String userAgent;
 	private AndroidLauncher context;
-	private int latestRevision = -1;
+	private Thread pendingThread;
 
 	public AndroidLobbyManager(AndroidAuthManager androidAuthManager, AndroidLauncher context) {
 		this.androidAuthManager = androidAuthManager;
@@ -31,28 +29,34 @@ public class AndroidLobbyManager implements LobbyManager {
 	}
 
 	@Override
-	public void enterLobby(final Profile profile, final LobbyListener listener) {
+	public synchronized void enterLobby(final Profile profile, final LobbyListener listener) {
+		Gdx.app.log("AndroidLobbyManager", "enterLobby called. isPolling: " + isPolling);
 		final int expectedPolling;
-		synchronized (this) {
-			if (isPolling % 2 == 1) {
-				return;
-			}
-			isPolling += 1;
-			expectedPolling = isPolling;
+		if (isPolling % 2 == 1) {
+			return;
 		}
-		latestRevision = -1;
-		AsyncTask.execute(new Runnable() {
+		isPolling += 1;
+		expectedPolling = isPolling;
+		if (pendingThread != null) {
+			throw new IllegalStateException("exitLobby must be called before calling enterLobby");
+		}
+		pendingThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
+				Gdx.app.log("AndroidLobbyManager", "entering lobby");
+				int latestRevision = -1;
 				while (isPolling == expectedPolling) {
 					try {
+						Gdx.app.log("AndroidLobbyManager", "Polling server");
 						final LobbyListResponse response =
 								Endpoints.lobbyListEndpoint.send(ImmutableLobbyListRequest
-										.builder()
-										.authToken(androidAuthManager.getAuthToken())
-										.latestRevision(latestRevision)
-										.build()
-								, userAgent);
+												.builder()
+												.authToken(androidAuthManager.getAuthToken())
+												.latestRevision(latestRevision)
+												.build()
+										, userAgent);
+
+						Gdx.app.log("AndroidLobbyManager", "Got response " + response.toJsonString());
 
 						if (isPolling == expectedPolling) {
 							latestRevision = response.getRevision();
@@ -79,28 +83,38 @@ public class AndroidLobbyManager implements LobbyManager {
 						}
 
 					} catch (IOException ex) {
-						Gdx.app.debug("AndroidLobbyManager", "Failed to get lobby list");
+						Gdx.app.log("AndroidLobbyManager", "Failed to get lobby list");
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException ex2) {
+							throw new UnknownError("Error while cooling down between retries");
+						}
 					}
 				}
+				Gdx.app.log("AndroidLobbyManager", "polling thread exit. isPolling: " + isPolling + " expectedPolling: " + expectedPolling);
 			}
 		});
+		pendingThread.start();
+		Gdx.app.log("AndroidLobbyManager", "Finished entering lobby");
 	}
 
 
 
 	@Override
-	public void exitLobby() {
-		synchronized (this) {
-			if (isPolling % 2 == 0) {
-				return;
-			}
-			isPolling += 1;
+	public synchronized void exitLobby() {
+		Gdx.app.log("AndroidLobbyManager", "exit lobby called. isPolling: " + isPolling);
+		if (isPolling % 2 == 0) {
+			return;
 		}
+		isPolling += 1;
+		pendingThread.interrupt();
+		pendingThread = null;
+		Gdx.app.log("AndroidLobbyManager", "Finished exiting");
 	}
 
 	@Override
 	public void enterRoom(LobbyEntry entry, LobbyRoomListener lobbyRoomListener) {
-
+		
 	}
 
 	@Override

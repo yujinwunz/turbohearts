@@ -8,7 +8,6 @@ import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.demodu.TurboHearts;
 import com.demodu.crossplat.content.ExampleContentManager;
-import com.demodu.crossplat.lobby.ExampleLobbyManager;
 
 import java.util.Arrays;
 
@@ -29,7 +28,7 @@ public class AndroidLauncher extends AndroidApplication {
 		initialize(new TurboHearts(
 				androidAuthManager,
 				new ExampleContentManager(),
-				new AndroidLobbyManager()
+				new AndroidLobbyManager(androidAuthManager, this)
 		), config);
 	}
 

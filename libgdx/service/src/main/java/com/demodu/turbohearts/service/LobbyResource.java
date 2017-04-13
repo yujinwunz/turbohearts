@@ -18,6 +18,8 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
@@ -29,16 +31,6 @@ import javax.ws.rs.core.Response;
 public class LobbyResource {
 	private static int version = 0;
 
-	private EventBus eventBus;
-
-	public LobbyResource(EventBus eventBus) {
-		this.eventBus = eventBus;
-	}
-
-	public Class<Resource> getResourceClass() {
-		return Resource.class;
-	}
-
 	protected static int getVersion() {
 		return version;
 	}
@@ -48,68 +40,75 @@ public class LobbyResource {
 		return version;
 	}
 
-	public class Resource {
+	@GET
+	@Path("Test")
+	public Response test() {
+		return Response.ok().entity("Hello").build();
+	}
 
-		@Path("list")
-		@Consumes(MediaType.APPLICATION_JSON)
-		@Produces(MediaType.APPLICATION_JSON)
-		public void list(LobbyListRequest request, @Suspended final AsyncResponse asyncResponse) {
-			AuthHelpers.withLoginAndDbAsync(request, asyncResponse, (UserSession userSession, Session session) -> {
-				eventBus.subscribe(LobbyListUpdate.class, (LobbyListUpdate event) -> {
-					if (event.getVersion() > request.getLatestRevision()) {
-						asyncResponse.resume(Response.ok(200).entity(
-								ImmutableLobbyListResponse
-										.builder()
-										.lobbyList(event.getLobbyRooms())
-										.revision(event.getVersion())
-										.build()
-						).build());
-						return false;
-					} else {
-						return true;
-					}
-				});
-				fireLobbyListEvent(session);
+	@POST
+	@Path("list")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public void list(LobbyListRequest request, @Suspended final AsyncResponse asyncResponse) {
+
+		System.out.println("Got lobby list request");
+
+		AuthHelpers.withLoginAndDbAsync(request, asyncResponse, (UserSession userSession, Session session) -> {
+			JettyServer.eventBus.subscribe(LobbyListUpdate.class, (LobbyListUpdate event) -> {
+				if (event.getVersion() > request.getLatestRevision()) {
+					asyncResponse.resume(Response.ok(200).entity(
+							ImmutableLobbyListResponse
+									.builder()
+									.lobbyList(event.getLobbyRooms())
+									.revision(event.getVersion())
+									.build()
+					).build());
+					return false;
+				} else {
+					return true;
+				}
 			});
+			fireLobbyListEvent(session);
+		});
+	}
+
+	@POST
+	@Path("room/create")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public void createRoom(CreateRoomRequest request, @Suspended final AsyncResponse asyncResponse) {
+		AuthHelpers.withLoginAndDbAsync(request, asyncResponse, (UserSession userSession, Session session) -> {
+			LobbyRoom lobbyRoom = new LobbyRoom(request.getName(), Collections.emptySet(), 0);
+			session.save(lobbyRoom);
+
+			asyncResponse.resume(Response.status(200).entity(
+					ImmutableRoomResponse
+							.builder()
+							.updateType(RoomResponse.UpdateType.EnteredRoom)
+							.room(lobbyRoom.toApi())
+							.build()
+			));
+
+			session.getTransaction().commit();
+
+			fireLobbyListEvent(session);
+		});
+	}
+
+	private void fireLobbyListEvent(Session session) {
+
+		List<LobbyRoom> lobbyRooms =
+				session.createQuery("from LobbyRoom", LobbyRoom.class).list();
+		List<LobbyListResponse.LobbyRoom> apiList = new ArrayList<>();
+		for (LobbyRoom room : lobbyRooms) {
+			apiList.add(room.toApi());
 		}
-
-		@Path("room/create")
-		@Consumes(MediaType.APPLICATION_JSON)
-		@Produces(MediaType.APPLICATION_JSON)
-		public void createRoom(CreateRoomRequest request, @Suspended final AsyncResponse asyncResponse) {
-			AuthHelpers.withLoginAndDbAsync(request, asyncResponse, (UserSession userSession, Session session) -> {
-				LobbyRoom lobbyRoom = new LobbyRoom(request.getName(), Collections.emptySet(), 0);
-				session.save(lobbyRoom);
-
-				asyncResponse.resume(Response.status(200).entity(
-						ImmutableRoomResponse
-						.builder()
-						.updateType(RoomResponse.UpdateType.EnteredRoom)
-						.room(lobbyRoom.toApi())
-						.build()
-				));
-
-				session.getTransaction().commit();
-
-				fireLobbyListEvent(session);
-			});
-		}
-
-		private void fireLobbyListEvent(Session session) {
-
-			List<LobbyRoom> lobbyRooms =
-					session.createQuery("from " + LobbyRoom.TABLE, LobbyRoom.class).list();
-			List<LobbyListResponse.LobbyRoom> apiList = new ArrayList<>();
-			for (LobbyRoom room : lobbyRooms) {
-				apiList.add(room.toApi());
-			}
-			eventBus.fireEvent(ImmutableLobbyListUpdate
-					.builder()
-					.version(getVersion())
-					.lobbyRooms(apiList)
-					.build()
-			);
-		}
-
+		JettyServer.eventBus.fireEvent(ImmutableLobbyListUpdate
+				.builder()
+				.version(getVersion())
+				.lobbyRooms(apiList)
+				.build()
+		);
 	}
 }

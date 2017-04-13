@@ -15,6 +15,8 @@ import static com.demodu.gamelogic.GameConductor.Phase.Ready;
 import static com.demodu.gamelogic.GameConductor.Round.Left;
 
 public class LocalGameConductor extends GameConductor {
+	public static final int NUM_ROUNDS_PER_GAME = 8;
+
 	private Player[] players;
 	private int currentPlayer = 0;
 	private GameConductor.Phase phase = Ready;
@@ -355,7 +357,7 @@ public class LocalGameConductor extends GameConductor {
 		}
 		round = GameConductor.Round.values()[(round.ordinal() + 1)%4];
 
-		if (numRounds == 1) {
+		if (numRounds == NUM_ROUNDS_PER_GAME) {
 			phase = Finished;
 			for (int i = 0; i < 4; i++) {
 				players[i].actor.reportGameEnd(

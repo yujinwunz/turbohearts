@@ -53,7 +53,6 @@ public class MultiplayerLobby extends ScreenAdapter {
 		this.lobbyManager = lobbyManager;
 		this.profile = profile;
 		this.gameContext = gameContext;
-		lobbyManager.enterLobby(profile, lobbyListener);
 
 		Table table = new Table();
 		table.setFillParent(true);
