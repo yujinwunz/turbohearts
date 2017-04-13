@@ -7,4 +7,5 @@ package com.demodu.turbohearts.api.endpoints;
 public class Endpoints {
 	public static LoginEndpoint loginEndpoint = new LoginEndpoint();
 	public static RegisterEndpoint registerEndpoint = new RegisterEndpoint();
+	public static LobbyListEndpoint lobbyListEndpoint = new LobbyListEndpoint();
 }
