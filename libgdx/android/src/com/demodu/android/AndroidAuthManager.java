@@ -117,6 +117,7 @@ public class AndroidAuthManager implements AuthManager {
 	}
 
 	private void fetchAndReportProfile(final GoogleSignInAccount account, final Callable onFinish) {
+
 		AsyncTask.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -187,5 +188,9 @@ public class AndroidAuthManager implements AuthManager {
 			});
 			onFinish.call();
 		}
+	}
+
+	protected String getAuthToken() {
+		return this.googleSignInResult.getSignInAccount().getIdToken();
 	}
 }

@@ -13,9 +13,9 @@ public class LobbyRoom {
 	private List<Avatar> players;
 	private String name;
 	private Avatar owner;
-	private MatchId id;
+	private String id;
 
-	public LobbyRoom(MatchId id, String name, List<Avatar> players, Avatar owner) {
+	public LobbyRoom(String id, String name, List<Avatar> players, Avatar owner) {
 		this.id = id;
 		this.name = name;
 		this.players = players;
@@ -30,7 +30,7 @@ public class LobbyRoom {
 		return owner;
 	}
 
-	public MatchId getId() {
+	public String getId() {
 		return id;
 	}
 

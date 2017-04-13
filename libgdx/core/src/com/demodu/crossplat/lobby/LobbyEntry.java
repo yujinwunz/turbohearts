@@ -5,17 +5,17 @@ import com.demodu.crossplat.auth.Avatar;
 import java.util.List;
 
 public class LobbyEntry {
-	private MatchId id;
+	private String id;
 	private String name;
 	private List<Avatar> players;
 
-	public LobbyEntry(MatchId id, String name, List<Avatar> players) {
+	public LobbyEntry(String id, String name, List<Avatar> players) {
 		this.id = id;
 		this.name = name;
 		this.players = players;
 	}
 
-	public MatchId getId() {
+	public String getId() {
 		return id;
 	}
 

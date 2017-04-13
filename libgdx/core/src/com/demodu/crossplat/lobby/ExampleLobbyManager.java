@@ -62,7 +62,7 @@ public class ExampleLobbyManager implements LobbyManager {
 			}
 			lobbyEntryList.add(
 					new LobbyEntry(
-							new MatchId(Integer.toString(randId)),
+							Integer.toString(randId),
 							"Game #" + randId,
 							avatars
 					)
@@ -177,7 +177,7 @@ public class ExampleLobbyManager implements LobbyManager {
 					new RandomAI()
 				),
 				new ExampleMatchManager(),
-				lobbyRoom.getId(),
+				new MatchId(lobbyRoom.getId()),
 				otherPlayers.get(0),
 				otherPlayers.get(1),
 				otherPlayers.get(2)
@@ -206,7 +206,7 @@ public class ExampleLobbyManager implements LobbyManager {
 					if (state == State.InRoom) {
 						int randId = Math.abs(random.nextInt());
 						lobbyRoom = new LobbyRoom(
-								new MatchId(Integer.toString(randId)),
+								Integer.toString(randId),
 								options.getTitle(),
 								new ArrayList<Avatar>(Collections.singletonList(profile.getAvatar())),
 								profile.getAvatar()
