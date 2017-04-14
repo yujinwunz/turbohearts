@@ -165,6 +165,7 @@ public class MultiplayerRoom extends ScreenAdapter {
 		leaveButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
+				lobbyManager.exitRoom();
 				onLeave.call();
 			}
 		});

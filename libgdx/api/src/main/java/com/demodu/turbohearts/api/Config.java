@@ -9,7 +9,7 @@ import java.util.List;
  * Created by yujinwunz on 9/04/2017.
  */
 
-public class Config {
+public class  	Config {
 	public final static URL SERVER_DOMAIN_NAME;
 
 	/**

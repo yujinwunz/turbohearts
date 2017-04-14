@@ -27,19 +27,19 @@ public class Endpoints {
 	public static class Room {
 
 		public static Endpoint<CreateRoomRequest, RoomResponse> createRoomEndpoint =
-				Endpoint.create("room/create", CreateRoomRequest.class, RoomResponse.class);
+				Endpoint.create("lobby/room/create", CreateRoomRequest.class, RoomResponse.class);
 
 		public static Endpoint<RoomRequest, RoomResponse> enterRoomEndpoint =
-				Endpoint.create("room/enter", RoomRequest.class, RoomResponse.class);
+				Endpoint.create("lobby/room/enter", RoomRequest.class, RoomResponse.class);
 
 		public static Endpoint<RoomRequest, RoomResponse> pollRoomEndpoint =
-				Endpoint.create("room/poll", RoomRequest.class, RoomResponse.class);
+				Endpoint.create("lobby/room/poll", RoomRequest.class, RoomResponse.class);
 
 		public static Endpoint<RoomRequest, RoomResponse> leaveRoomEndpoint =
-				Endpoint.create("room/leave", RoomRequest.class, RoomResponse.class);
+				Endpoint.create("lobby/room/leave", RoomRequest.class, RoomResponse.class);
 
 		public static Endpoint<RoomRequest, RoomResponse> startGameEndpoint =
-				Endpoint.create("room/start", RoomRequest.class, RoomResponse.class);
+				Endpoint.create("lobby/room/start", RoomRequest.class, RoomResponse.class);
 
 	}
 }

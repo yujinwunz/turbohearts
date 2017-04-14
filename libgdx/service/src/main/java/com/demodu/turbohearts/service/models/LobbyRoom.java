@@ -13,7 +13,9 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 @Entity
@@ -25,16 +27,28 @@ public class LobbyRoom {
 	private int version;
 	private String name;
 	private Set<User> players;
+	private User host;
 
 	public LobbyRoom() {
 		// Just for you, Hibernate <3
 	}
 
-	public LobbyRoom(String name, Set<User> players, int version) {
+	public LobbyRoom(String name, Set<User> players, int version, User host) {
 		this.name = name;
 		this.players = players;
 		this.version = version;
+		this.host = host;
 	}
+
+	@ManyToOne
+	public User getHost() {
+		return host;
+	}
+
+	public void setHost(User host) {
+		this.host = host;
+	}
+
 
 	@Column(name="version")
 	public int getVersion() {
@@ -65,12 +79,17 @@ public class LobbyRoom {
 		this.name = name;
 	}
 
-	@OneToMany
+	@ManyToMany
 	public Set<User> getPlayers() {
 		return players;
 	}
 
-	public void setPlayers(Set<User> players) {
+	@PreUpdate
+	public void versionCheck() {
+
+	}
+
+	public synchronized void setPlayers(Set<User> players) {
 		this.players = players;
 	}
 
@@ -85,8 +104,22 @@ public class LobbyRoom {
 				.addAllPlayerNames(players)
 				.title(getName())
 				.id(getId())
+				.host(getHost().getUsername())
 				.version(getVersion())
 				.build();
 		return item;
+	}
+
+	public synchronized boolean hasPlayer(User user) {
+		for (User u : players) {
+			if (u.getId().equals(user.getId())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public synchronized void removePlayer(User user) {
+		players.remove(user);
 	}
 }

@@ -24,7 +24,7 @@ public class UserSession {
 	}
 
 	@Id
-	@Column(name="idToken",length = 1094)
+	@Column(name="idToken", length = 2000)
 	public String getIdToken() {
 		return idToken;
 	}

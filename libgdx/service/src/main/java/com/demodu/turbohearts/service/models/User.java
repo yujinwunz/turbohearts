@@ -52,4 +52,13 @@ public class User {
 	public void setId(String id) {
 		this.id = id;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof User) {
+			return ((User) o).getId().equals(getId());
+		} else {
+			return false;
+		}
+	}
 }

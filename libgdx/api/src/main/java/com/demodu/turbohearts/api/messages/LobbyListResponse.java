@@ -21,6 +21,7 @@ public abstract class LobbyListResponse extends ApiMessage {
 	public static abstract class LobbyRoom {
 		public abstract int getId();
 		public abstract int getVersion();
+		public abstract String getHost();
 		public abstract List<String> getPlayerNames();
 		public abstract String getTitle();
 	}
