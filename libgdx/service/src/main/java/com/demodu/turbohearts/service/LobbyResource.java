@@ -12,7 +12,6 @@ import com.demodu.turbohearts.service.events.ImmutableRoomUpdate;
 import com.demodu.turbohearts.service.events.LobbyListUpdate;
 import com.demodu.turbohearts.service.events.RoomUpdate;
 import com.demodu.turbohearts.service.models.LobbyRoom;
-import com.demodu.turbohearts.service.models.ModelLocks;
 import com.demodu.turbohearts.service.models.UserSession;
 
 import org.hibernate.Session;
@@ -22,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -42,12 +40,6 @@ public class LobbyResource {
 	protected static synchronized int bumpVersion() {
 		version += 1;
 		return version;
-	}
-
-	@GET
-	@Path("Test")
-	public Response test() {
-		return Response.ok().entity("Hello").build();
 	}
 
 	@POST
@@ -111,37 +103,35 @@ public class LobbyResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response enterRoom(RoomRequest request) {
 		return AuthHelpers.withLoginAndDb(request, (UserSession userSession, Session session) -> {
-			synchronized (ModelLocks.LobbyRoom.getLock(request.getRoomId())) {
-				LobbyRoom lobbyRoom = getLobbyRoom(request.getRoomId(), session);
+			LobbyRoom lobbyRoom = getLobbyRoom(request.getRoomId(), session);
 
-				if (lobbyRoom == null) {
-					return Response.status(200).entity(
-							ImmutableRoomResponse
-									.builder()
-									.updateType(RoomResponse.UpdateType.LeaveRoom)
-									.room(null)
-									.leaveMessage("Room does not exist")
-									.build()
-					).build();
-				}
-
-				lobbyRoom.getPlayers().add(userSession.getUser());
-				lobbyRoom.setVersion(lobbyRoom.getVersion() + 1);
-				session.update(lobbyRoom);
-
-				bumpVersion();
-
-				fireRoomUpdateEvent(lobbyRoom, session);
-
-				fireLobbyListEvent(session);
+			if (lobbyRoom == null) {
 				return Response.status(200).entity(
 						ImmutableRoomResponse
 								.builder()
-								.updateType(RoomResponse.UpdateType.EnteredRoom)
-								.room(lobbyRoom.toApi())
+								.updateType(RoomResponse.UpdateType.LeaveRoom)
+								.room(null)
+								.leaveMessage("Room does not exist")
 								.build()
 				).build();
 			}
+
+			lobbyRoom.getPlayers().add(userSession.getUser());
+			lobbyRoom.setVersion(lobbyRoom.getVersion() + 1);
+			session.update(lobbyRoom);
+
+			bumpVersion();
+
+			fireRoomUpdateEvent(lobbyRoom, session);
+
+			fireLobbyListEvent(session);
+			return Response.status(200).entity(
+					ImmutableRoomResponse
+							.builder()
+							.updateType(RoomResponse.UpdateType.EnteredRoom)
+							.room(lobbyRoom.toApi())
+							.build()
+			).build();
 		});
 	}
 
@@ -151,54 +141,52 @@ public class LobbyResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response leaveRoom(RoomRequest request) {
 		return AuthHelpers.withLoginAndDb(request, (UserSession userSession, Session session) -> {
-			synchronized (ModelLocks.LobbyRoom.getLock(request.getRoomId())) {
-				LobbyRoom lobbyRoom = getLobbyRoom(request.getRoomId(), session);
+			LobbyRoom lobbyRoom = getLobbyRoom(request.getRoomId(), session);
 
-				if (lobbyRoom == null) {
-					return Response.status(200).entity(
-							ImmutableRoomResponse
-									.builder()
-									.updateType(RoomResponse.UpdateType.LeaveRoom)
-									.room(null)
-									.leaveMessage("Room does not exist")
-									.build()
-					).build();
-				}
-
-				if (!lobbyRoom.hasPlayer(userSession.getUser())) {
-					return Response.status(200).entity(
-							ImmutableRoomResponse
-									.builder()
-									.updateType(RoomResponse.UpdateType.LeaveRoom)
-									.room(null)
-									.leaveMessage("You are not in the room")
-									.build()
-					).build();
-				}
-
-				lobbyRoom.removePlayer(userSession.getUser());
-				lobbyRoom.setVersion(lobbyRoom.getVersion() + 1);
-
-				bumpVersion();
-
-				if (lobbyRoom.getPlayers().size() == 0 ||
-						lobbyRoom.getHost().equals(userSession.getUser())) {
-					session.delete(lobbyRoom);
-					fireRoomDeleteEvent(lobbyRoom, session);
-				} else {
-					session.update(lobbyRoom);
-					fireRoomUpdateEvent(lobbyRoom, session);
-				}
-
-				fireLobbyListEvent(session);
+			if (lobbyRoom == null) {
 				return Response.status(200).entity(
 						ImmutableRoomResponse
 								.builder()
 								.updateType(RoomResponse.UpdateType.LeaveRoom)
-								.leaveMessage("You have left the room")
+								.room(null)
+								.leaveMessage("Room does not exist")
 								.build()
 				).build();
 			}
+
+			if (!lobbyRoom.hasPlayer(userSession.getUser())) {
+				return Response.status(200).entity(
+						ImmutableRoomResponse
+								.builder()
+								.updateType(RoomResponse.UpdateType.LeaveRoom)
+								.room(null)
+								.leaveMessage("You are not in the room")
+								.build()
+				).build();
+			}
+
+			lobbyRoom.removePlayer(userSession.getUser());
+			lobbyRoom.setVersion(lobbyRoom.getVersion() + 1);
+
+			bumpVersion();
+
+			if (lobbyRoom.getPlayers().size() == 0 ||
+					lobbyRoom.getHost().equals(userSession.getUser())) {
+				session.delete(lobbyRoom);
+				fireRoomDeleteEvent(lobbyRoom, session);
+			} else {
+				session.update(lobbyRoom);
+				fireRoomUpdateEvent(lobbyRoom, session);
+			}
+
+			fireLobbyListEvent(session);
+			return Response.status(200).entity(
+					ImmutableRoomResponse
+							.builder()
+							.updateType(RoomResponse.UpdateType.LeaveRoom)
+							.leaveMessage("You have left the room")
+							.build()
+			).build();
 		});
 	}
 
@@ -208,59 +196,56 @@ public class LobbyResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public void pollRoom(RoomRequest request, @Suspended final AsyncResponse response) {
 		AuthHelpers.withLoginAndDbAsync(request, response, (UserSession userSession, Session session) -> {
-			synchronized (ModelLocks.LobbyRoom.getLock(request.getRoomId())) {
+			LobbyRoom room = getLobbyRoom(request.getRoomId(), session);
 
-				LobbyRoom room = getLobbyRoom(request.getRoomId(), session);
+			if (room == null) {
+				response.resume(Response.status(200).entity(
+						ImmutableRoomResponse
+								.builder()
+								.updateType(RoomResponse.UpdateType.LeaveRoom)
+								.room(null)
+								.leaveMessage("Room does not exist")
+				).build());
+			} else if (room.hasPlayer(userSession.getUser()) == false) {
+				response.resume(Response.status(200).entity(
+						ImmutableRoomResponse
+								.builder()
+								.updateType(RoomResponse.UpdateType.LeaveRoom)
+								.room(null)
+								.leaveMessage("You're not in the room")
+				).build());
+			} else {
 
-				if (room == null) {
-					response.resume(Response.status(200).entity(
-							ImmutableRoomResponse
-									.builder()
-									.updateType(RoomResponse.UpdateType.LeaveRoom)
-									.room(null)
-									.leaveMessage("Room does not exist")
-					).build());
-				} else if (room.hasPlayer(userSession.getUser()) == false) {
-					response.resume(Response.status(200).entity(
-							ImmutableRoomResponse
-									.builder()
-									.updateType(RoomResponse.UpdateType.LeaveRoom)
-									.room(null)
-									.leaveMessage("You're not in the room")
-					).build());
-				} else {
-
-					JettyServer.eventBus.subscribe(RoomUpdate.class, (RoomUpdate event) -> {
-						if (event.getRoom().getId() != request.getRoomId()) {
-							return true;
-						}
-						switch (event.getType()) {
-							case Update:
-								if (event.getRoom().getVersion() > request.getLatestVersion()) {
-									response.resume(Response.status(200).entity(
-											ImmutableRoomResponse
-											.builder()
-											.updateType(RoomResponse.UpdateType.UpdateRoom)
-											.room(event.getRoom())
-											.build()
-									).build());
-									return false;
-								} else {
-									return true;
-								}
-							case Delete:
+				JettyServer.eventBus.subscribe(RoomUpdate.class, (RoomUpdate event) -> {
+					if (event.getRoom().getId() != request.getRoomId()) {
+						return true;
+					}
+					switch (event.getType()) {
+						case Update:
+							if (event.getRoom().getVersion() > request.getLatestVersion()) {
 								response.resume(Response.status(200).entity(
 										ImmutableRoomResponse
 												.builder()
-												.updateType(RoomResponse.UpdateType.LeaveRoom)
-												.leaveMessage("The room was closed")
+												.updateType(RoomResponse.UpdateType.UpdateRoom)
+												.room(event.getRoom())
 												.build()
 								).build());
 								return false;
-						}
-						return false;
-					});
-				}
+							} else {
+								return true;
+							}
+						case Delete:
+							response.resume(Response.status(200).entity(
+									ImmutableRoomResponse
+											.builder()
+											.updateType(RoomResponse.UpdateType.LeaveRoom)
+											.leaveMessage("The room was closed")
+											.build()
+							).build());
+							return false;
+					}
+					return false;
+				});
 			}
 		});
 	}

@@ -80,7 +80,7 @@ public class AndroidAuthManager implements AuthManager {
 						.build();
 
 				try {
-					ProfileResponse response = Endpoints.registerEndpoint.send(
+					ProfileResponse response = Endpoints.register.send(
 							request,
 							context.getString(R.string.user_agent)
 					);
@@ -127,7 +127,7 @@ public class AndroidAuthManager implements AuthManager {
 						.build();
 				try {
 					Log.d("AndroidAuthManager", "sending out response");
-					final ProfileResponse response = Endpoints.loginEndpoint.send(
+					final ProfileResponse response = Endpoints.login.send(
 							request,
 							context.getString(R.string.user_agent)
 					);

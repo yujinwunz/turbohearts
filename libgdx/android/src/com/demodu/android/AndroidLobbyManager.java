@@ -57,7 +57,7 @@ public class AndroidLobbyManager implements LobbyManager {
 				while (pollingState == expectedPolling) {
 					try {
 						final LobbyListResponse response =
-								Endpoints.lobbyListEndpoint.send(ImmutableLobbyListRequest
+								Endpoints.lobbyList.send(ImmutableLobbyListRequest
 												.builder()
 												.authToken(androidAuthManager.getAuthToken())
 												.latestRevision(latestRevision)
@@ -143,9 +143,9 @@ public class AndroidLobbyManager implements LobbyManager {
 						Endpoint<RoomRequest, RoomResponse> endpoint;
 
 						if (latestVersion == -1 && shouldEnterFirst) {
-							endpoint = Endpoints.Room.enterRoomEndpoint;
+							endpoint = Endpoints.Room.enterRoom;
 						} else {
-							endpoint = Endpoints.Room.pollRoomEndpoint;
+							endpoint = Endpoints.Room.pollRoom;
 						}
 
 
@@ -211,7 +211,7 @@ public class AndroidLobbyManager implements LobbyManager {
 				@Override
 				public void run() {
 					try {
-						Endpoints.Room.leaveRoomEndpoint.send(ImmutableRoomRequest
+						Endpoints.Room.leaveRoom.send(ImmutableRoomRequest
 										.builder()
 										.authToken(androidAuthManager.getAuthToken())
 										.roomId(currentRoomId)
@@ -240,7 +240,7 @@ public class AndroidLobbyManager implements LobbyManager {
 						.build();
 
 				try {
-					final RoomResponse response = Endpoints.Room.createRoomEndpoint.send(
+					final RoomResponse response = Endpoints.Room.createRoom.send(
 							createRoomRequest,
 							context.getString(R.string.user_agent)
 					);
