@@ -3,16 +3,15 @@ package com.demodu.android;
 import android.os.AsyncTask;
 
 import com.badlogic.gdx.Gdx;
-import com.demodu.crossplat.auth.Avatar;
-import com.demodu.crossplat.auth.Profile;
-import com.demodu.crossplat.lobby.ExampleMatchManager;
-import com.demodu.crossplat.lobby.LobbyEntry;
-import com.demodu.crossplat.lobby.LobbyManager;
-import com.demodu.crossplat.lobby.LobbyRoom;
-import com.demodu.crossplat.lobby.MatchId;
-import com.demodu.crossplat.lobby.RoomOptions;
-import com.demodu.gamelogic.LocalGameConductor;
-import com.demodu.player.RandomAI;
+import com.demodu.turbohearts.crossplat.auth.Avatar;
+import com.demodu.turbohearts.crossplat.auth.Profile;
+import com.demodu.turbohearts.crossplat.lobby.ExampleMatchManager;
+import com.demodu.turbohearts.crossplat.lobby.LobbyManager;
+import com.demodu.turbohearts.crossplat.lobby.LobbyRoom;
+import com.demodu.turbohearts.crossplat.lobby.MatchId;
+import com.demodu.turbohearts.crossplat.lobby.RoomOptions;
+import com.demodu.turbohearts.gamelogic.LocalGameConductor;
+import com.demodu.turbohearts.game.player.RandomAI;
 import com.demodu.turbohearts.api.endpoints.Endpoint;
 import com.demodu.turbohearts.api.endpoints.Endpoints;
 import com.demodu.turbohearts.api.messages.CreateRoomRequest;
@@ -27,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AndroidLobbyManager implements LobbyManager {
+class AndroidLobbyManager implements LobbyManager {
 
 	private int pollingState = 0;
 	private AndroidAuthManager androidAuthManager;
@@ -36,8 +35,9 @@ public class AndroidLobbyManager implements LobbyManager {
 	private Thread pendingLobbyThread;
 	private Thread pendingRoomThread;
 	private Integer currentRoomId;
+	private LobbyRoomListener creator;
 
-	public AndroidLobbyManager(AndroidAuthManager androidAuthManager, AndroidLauncher context) {
+	AndroidLobbyManager(AndroidAuthManager androidAuthManager, AndroidLauncher context) {
 		this.androidAuthManager = androidAuthManager;
 		this.userAgent = context.getString(R.string.user_agent);
 		this.context = context;
@@ -69,17 +69,10 @@ public class AndroidLobbyManager implements LobbyManager {
 							@Override
 							public void run() {
 								if (pollingState == expectedPolling) {
-									List<LobbyEntry> lobbyEntryList = new ArrayList<>();
+									List<LobbyRoom> lobbyEntryList = new ArrayList<>();
 									for (LobbyListResponse.LobbyRoom room : response.getLobbyList()) {
-										List<Avatar> playerList = new ArrayList<Avatar>();
-										for (String name : room.getPlayerNames()) {
-											playerList.add(new Avatar(name));
-										}
-										lobbyEntryList.add(new LobbyEntry(
-												Integer.toString(room.getId()),
-												room.getTitle(),
-												playerList)
-										);
+
+										lobbyEntryList.add(Util.toCore(room));
 									}
 									listener.onLobbyList(lobbyEntryList);
 								}
@@ -115,12 +108,12 @@ public class AndroidLobbyManager implements LobbyManager {
 	}
 
 	@Override
-	public void enterRoom(final LobbyEntry entry, final LobbyRoomListener lobbyRoomListener) {
+	public void enterRoom(final LobbyRoom entry, final LobbyRoomListener lobbyRoomListener) {
 		exitLobby();
-		pollRoom(Integer.parseInt(entry.getId()), lobbyRoomListener, true);
+		pollRoom(entry.getId(), lobbyRoomListener, true);
 	}
 
-	public synchronized void pollRoom(
+	private synchronized void pollRoom(
 			final int roomId,
 			final LobbyRoomListener lobbyRoomListener,
 			final boolean shouldEnterFirst
@@ -230,6 +223,7 @@ public class AndroidLobbyManager implements LobbyManager {
 
 	@Override
 	public void createRoom(final RoomOptions options, final LobbyRoomListener lobbyRoomListener) {
+		creator = lobbyRoomListener;
 		AsyncTask.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -250,12 +244,8 @@ public class AndroidLobbyManager implements LobbyManager {
 					context.postRunnable(new Runnable() {
 						@Override
 						public void run() {
-							if (response != null) {
-								pollRoom(response.getRoom().getId(), lobbyRoomListener, false);
-								processRoomResponse(response, lobbyRoomListener);
-							} else {
-								lobbyRoomListener.onCancel("Couldn't create new room");
-							}
+						pollRoom(response.getRoom().getId(), lobbyRoomListener, false);
+						processRoomResponse(response, lobbyRoomListener);
 						}
 					});
 
@@ -280,7 +270,7 @@ public class AndroidLobbyManager implements LobbyManager {
 				avatarList.add(new Avatar(name));
 			}
 			room = new LobbyRoom(
-					Integer.toString(response.getRoom().getId()),
+					response.getRoom().getId(),
 					response.getRoom().getTitle(),
 					avatarList,
 					avatarList.get(0)
@@ -291,10 +281,13 @@ public class AndroidLobbyManager implements LobbyManager {
 				lobbyRoomListener.onEnter(room);
 				break;
 			case UpdateRoom:
+				assert room != null;
 				lobbyRoomListener.onPlayerListUpdate(room.getPlayers());
 				break;
 			case StartGame:
 				exitRoom();
+				assert room != null;
+				assert response.getGameId() != null;
 				lobbyRoomListener.onPlay(
 						new LocalGameConductor(
 								new RandomAI(),

@@ -5,10 +5,10 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
-import com.demodu.crossplat.auth.AuthManager;
-import com.demodu.crossplat.auth.Avatar;
-import com.demodu.crossplat.auth.Profile;
-import com.demodu.gwtcompat.Callable;
+import com.demodu.turbohearts.crossplat.auth.AuthManager;
+import com.demodu.turbohearts.crossplat.auth.Avatar;
+import com.demodu.turbohearts.crossplat.auth.Profile;
+import com.demodu.turbohearts.gwtcompat.Callable;
 import com.demodu.turbohearts.api.endpoints.Endpoints;
 import com.demodu.turbohearts.api.messages.ImmutableLoginRequest;
 import com.demodu.turbohearts.api.messages.ImmutableRegisterRequest;
@@ -175,7 +175,6 @@ public class AndroidAuthManager implements AuthManager {
 
 	protected void reportLoginResult(final GoogleSignInResult result, Callable onFinish) {
 		this.googleSignInResult = result;
-		result.getSignInAccount().getServerAuthCode();
 		if (result.isSuccess()) {
 			fetchAndReportProfile(result.getSignInAccount(), onFinish);
 		} else {

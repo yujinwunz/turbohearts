@@ -1,5 +1,5 @@
 dependencies {
-    compile project(':core')
+    compile project(':gamelogic')
     compile project(':api')
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'org.slf4j:slf4j-simple:1.8.0-alpha0'

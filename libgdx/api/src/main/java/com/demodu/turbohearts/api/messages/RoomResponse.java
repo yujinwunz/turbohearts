@@ -19,13 +19,11 @@ public abstract class RoomResponse extends ApiMessage {
 
 	public abstract UpdateType getUpdateType();
 
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public abstract LobbyListResponse.LobbyRoom getRoom();
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public abstract String getGameId();
+	public abstract Integer getGameId();
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)

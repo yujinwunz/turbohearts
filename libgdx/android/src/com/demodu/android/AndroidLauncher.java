@@ -6,8 +6,8 @@ import android.util.Log;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.demodu.TurboHearts;
-import com.demodu.crossplat.content.ExampleContentManager;
+import com.demodu.turbohearts.TurboHearts;
+import com.demodu.turbohearts.crossplat.content.ExampleContentManager;
 
 import java.util.Arrays;
 

@@ -21,8 +21,12 @@ public abstract class PollGameResponse extends ApiMessage {
 	@JsonSerialize(as=ImmutableGameEvent.class)
 	@JsonDeserialize(as=ImmutableGameEvent.class)
 	public static abstract class GameEvent {
-		public abstract int getActionNumber();
-		public abstract ActionType getActionType();
+		public abstract int getEventNumber();
+		public abstract EventType getEventType();
+
+		@Nullable
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		public abstract GameView getGameView();
 
 		@Nullable
 		@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -50,6 +54,34 @@ public abstract class PollGameResponse extends ApiMessage {
 
 	}
 
+	@Value.Immutable
+	@JsonSerialize(as=ImmutableGameView.class)
+	@JsonDeserialize(as=ImmutableGameView.class)
+	public static abstract class GameView {
+		public abstract Phase getGamePhase();
+
+		public abstract int getGameRound();
+
+		public abstract List<Card> getTable();
+		public abstract List<Card> getHand();
+
+		public abstract List<Card> getLegalPlays();
+
+		public abstract boolean getHeartsBroken();
+
+		public abstract List<Card> getChargedCards();
+		public abstract List<Suit> getPlayedSuits();
+	}
+
+	public enum Phase {
+		Ready,
+		Passing,
+		Charging,
+		FirstRound,
+		Playing,
+		Finished
+	}
+
 	public enum Position {
 		Self,
 		Left,
@@ -57,10 +89,10 @@ public abstract class PollGameResponse extends ApiMessage {
 		Right
 	}
 
-	public enum ActionType {
+	public enum EventType {
 		MoveRequested,
 		PlayCard,
-		PassCard,
+		PassCards,
 		ChargeCard,
 		TrickEnd,
 		RoundEnd,

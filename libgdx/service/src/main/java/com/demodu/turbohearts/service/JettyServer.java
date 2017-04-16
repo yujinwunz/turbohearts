@@ -1,5 +1,7 @@
 package com.demodu.turbohearts.service;
 
+import com.demodu.turbohearts.service.game.LiveGameManager;
+
 import org.eclipse.jetty.server.Server;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -22,13 +24,20 @@ public class JettyServer {
 
 	public static final int BACKGROUND_THREADS = 2;
 	public static EventBus eventBus;
+	public static LiveGameManager liveGameManager;
 
 	public static void main(String args[]) {
 		setUpHibernate();
 
 		setupEventPipeline();
 
+		setupGameManager();
+
 		setUpAndStartServer();
+	}
+
+	private static void setupGameManager() {
+		liveGameManager = new LiveGameManager();
 	}
 
 	private static void setupEventPipeline() {

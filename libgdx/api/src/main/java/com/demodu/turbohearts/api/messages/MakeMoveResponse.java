@@ -8,5 +8,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonSerialize(as=ImmutableMakeMoveResponse.class)
 @JsonDeserialize(as=ImmutableMakeMoveResponse.class)
-public class MakeMoveResponse extends ApiMessage {
+public abstract class MakeMoveResponse extends ApiMessage {
+	public abstract boolean getSuccess();
+	public abstract String getMessage();
 }

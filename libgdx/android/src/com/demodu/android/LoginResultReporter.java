@@ -1,6 +1,6 @@
 package com.demodu.android;
 
-import com.demodu.gwtcompat.Callable;
+import com.demodu.turbohearts.gwtcompat.Callable;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 
 /**

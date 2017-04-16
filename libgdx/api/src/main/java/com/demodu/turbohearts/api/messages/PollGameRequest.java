@@ -9,6 +9,6 @@ import org.immutables.value.Value;
 @JsonSerialize(as=ImmutablePollGameRequest.class)
 @JsonDeserialize(as=ImmutablePollGameRequest.class)
 public abstract class PollGameRequest extends AuthenticatedRequest {
-	public abstract String getGameId();
-	public abstract String getLatestActionNumber();
+	public abstract int getGameId();
+	public abstract int getLatestActionNumber();
 }
