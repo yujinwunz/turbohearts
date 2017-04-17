@@ -23,7 +23,7 @@ public class  	Config {
 
 	static {
 		try {
-			SERVER_DOMAIN_NAME = new URL("http", "192.168.43.135", 8080, "");
+			SERVER_DOMAIN_NAME = new URL("https", "demodu.com", 80, "");
 		} catch (MalformedURLException ex) {
 			throw new IllegalStateException("Server domain name is not a valid URL.");
 		}

@@ -25,16 +25,16 @@ public class JettyServer {
 	public static EventBus eventBus;
 	public static LiveGameManager liveGameManager;
 
-	@Parameter(names = "ssl")
+	@Parameter(names = "-ssl")
 	private boolean sslEnabled = false;
 
-	@Parameter(names = "keystore-path")
+	@Parameter(names = "-keystore-path")
 	private String keystorePath = null;
 
-	@Parameter(names = "keystore-alias")
+	@Parameter(names = "-keystore-alias")
 	private String keystoreAlias = null;
 
-	@Parameter(names = "keystore-pass", password = true)
+	@Parameter(names = "-keystore-pass", password = true)
 	private String keystorePass = null;
 
 	public static void main(String args[]) {
