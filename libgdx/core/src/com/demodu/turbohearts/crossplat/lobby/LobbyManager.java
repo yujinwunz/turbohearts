@@ -36,5 +36,6 @@ public interface LobbyManager {
 				Avatar right
 		);
 		void onCancel(String message);
+		void onLeave();
 	}
 }

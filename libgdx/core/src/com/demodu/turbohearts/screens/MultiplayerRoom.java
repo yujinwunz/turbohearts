@@ -42,6 +42,7 @@ public class MultiplayerRoom extends ScreenAdapter {
 	private LobbyManager lobbyManager;
 	private Button startButton;
 	private Button leaveButton;
+	private boolean shouldShowLeaveMessage = true;
 
 	// Joined game
 	public MultiplayerRoom(
@@ -108,6 +109,11 @@ public class MultiplayerRoom extends ScreenAdapter {
 			public void onCancel(String message) {
 				MultiplayerRoom.this.onCancel(message, onLeave);
 			}
+
+			@Override
+			public void onLeave() {
+				onLeave.call();
+			}
 		};
 	}
 
@@ -124,6 +130,7 @@ public class MultiplayerRoom extends ScreenAdapter {
 
 	private void enterRoom(LobbyRoom lobbyRoom) {
 		Gdx.app.log("MultiplayerRoom", "Room entered");
+		leaveButton.setDisabled(false);
 		titleLabel.setText(lobbyRoom.getName());
 		updatePlayers(lobbyRoom.getPlayers());
 	}
@@ -170,11 +177,18 @@ public class MultiplayerRoom extends ScreenAdapter {
 		leaveButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
+
+				if (startButton != null) {
+					startButton.setDisabled(true);
+				}
+				leaveButton.setDisabled(true);
+
 				lobbyManager.exitRoom();
-				onLeave.call();
+				shouldShowLeaveMessage = false;
 			}
 		});
 		table.add(leaveButton).left().bottom();
+		leaveButton.setDisabled(true);
 
 		if (hosting) {
 			startButton = new TextButton("Start Game", AssetFactory.makeSmallTextButtonStyle(
@@ -186,8 +200,6 @@ public class MultiplayerRoom extends ScreenAdapter {
 			startButton.addListener(new ChangeListener() {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
-					startButton.setDisabled(true);
-					leaveButton.setDisabled(true);
 					lobbyManager.startGame();
 				}
 			});

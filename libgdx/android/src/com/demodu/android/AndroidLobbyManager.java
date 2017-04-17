@@ -26,14 +26,15 @@ import java.util.List;
 
 class AndroidLobbyManager implements LobbyManager {
 
-	private int pollingState = 0;
+	private int lobbyPollingState = 0;
+	private int roomPollingState = 0;
 	private AndroidAuthManager androidAuthManager;
 	private String userAgent;
 	private AndroidLauncher context;
 	private Thread pendingLobbyThread;
 	private Thread pendingRoomThread;
 	private Integer currentRoomId;
-	private LobbyRoomListener creator;
+	private LobbyRoomListener roomListener;
 
 	AndroidLobbyManager(AndroidAuthManager androidAuthManager, AndroidLauncher context) {
 		this.androidAuthManager = androidAuthManager;
@@ -43,8 +44,8 @@ class AndroidLobbyManager implements LobbyManager {
 
 	@Override
 	public synchronized void enterLobby(final Profile profile, final LobbyListener listener) {
-		pollingState += 1;
-		final int expectedPolling = pollingState;
+		lobbyPollingState += 1;
+		final int expectedPolling = lobbyPollingState;
 		if (pendingLobbyThread != null) {
 			throw new IllegalStateException("exitLobby must be called before calling enterLobby");
 		}
@@ -52,7 +53,7 @@ class AndroidLobbyManager implements LobbyManager {
 			@Override
 			public void run() {
 				int latestRevision = -1;
-				while (pollingState == expectedPolling) {
+				while (lobbyPollingState == expectedPolling) {
 					try {
 						final LobbyListResponse response =
 								Endpoints.lobbyList.send(ImmutableLobbyListRequest
@@ -66,7 +67,7 @@ class AndroidLobbyManager implements LobbyManager {
 						context.postRunnable(new Runnable() {
 							@Override
 							public void run() {
-								if (pollingState == expectedPolling) {
+								if (lobbyPollingState == expectedPolling) {
 									List<LobbyRoom> lobbyEntryList = new ArrayList<>();
 									for (LobbyListResponse.LobbyRoom room : response.getLobbyList()) {
 
@@ -96,18 +97,16 @@ class AndroidLobbyManager implements LobbyManager {
 
 	@Override
 	public synchronized void exitLobby() {
-		Gdx.app.log("AndroidLobbyManager", "exit lobby called. isPolling: " + pollingState);
-		if (pendingLobbyThread != null) {
-			pollingState += 1;
-			pendingLobbyThread.interrupt();
-			pendingLobbyThread = null;
-		}
+		Gdx.app.log("AndroidLobbyManager", "exit lobby called. isPolling: " + lobbyPollingState);
+		lobbyPollingState += 1;
+		pendingLobbyThread.interrupt();
+		pendingLobbyThread = null;
 		Gdx.app.log("AndroidLobbyManager", "Finished exiting");
 	}
 
 	@Override
-	public void enterRoom(final LobbyRoom entry, final LobbyRoomListener lobbyRoomListener) {
-		exitLobby();
+	public synchronized void enterRoom(final LobbyRoom entry, final LobbyRoomListener lobbyRoomListener) {
+		roomListener = lobbyRoomListener;
 		pollRoom(entry.getId(), lobbyRoomListener, true);
 	}
 
@@ -118,18 +117,18 @@ class AndroidLobbyManager implements LobbyManager {
 	) {
 		Gdx.app.log("AndroidLobbyManager", "enterRoom called");
 		currentRoomId = roomId;
-		pollingState += 1;
-		final int expectedPollingState = pollingState;
+		roomPollingState += 1;
+		final int expectedPollingState = roomPollingState;
 		if (pendingRoomThread != null) {
 			throw new IllegalStateException("We're still in a room...");
 		}
 		pendingRoomThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				Gdx.app.log("AndroidLobbyManager", "Enter room polling loop. " + expectedPollingState + " " + pollingState);
+				Gdx.app.log("AndroidLobbyManager", "Enter room polling loop. " + expectedPollingState + " " + roomPollingState);
 				int latestVersion = -1;
 				// Main polling loop for room updates
-				while (expectedPollingState == pollingState) {
+				while (expectedPollingState == roomPollingState) {
 					try {
 						Endpoint<RoomRequest, RoomResponse> endpoint;
 
@@ -160,7 +159,7 @@ class AndroidLobbyManager implements LobbyManager {
 						context.postRunnable(new Runnable() {
 							@Override
 							public void run() {
-								if (expectedPollingState == pollingState) {
+								if (expectedPollingState == roomPollingState) {
 									processRoomResponse(response, lobbyRoomListener);
 								}
 							}
@@ -184,7 +183,7 @@ class AndroidLobbyManager implements LobbyManager {
 					}
 				}
 
-				Gdx.app.log("AndroidLobbyManager", "Exit room polling loop");
+				Gdx.app.log("AndroidLobbyManager", "Exit room polling loop" + expectedPollingState + " " + roomPollingState);
 			}
 		});
 		pendingRoomThread.start();
@@ -193,35 +192,39 @@ class AndroidLobbyManager implements LobbyManager {
 	@Override
 	public synchronized void exitRoom() {
 		Gdx.app.log("AndroidLobbyManager", "exitRoom called");
-		if (pendingRoomThread != null) {
-			pollingState += 1;
-			pendingRoomThread.interrupt();
-			pendingRoomThread = null;
+		roomPollingState += 1;
+		pendingRoomThread.interrupt();
+		pendingRoomThread = null;
 
-			AsyncTask.execute(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						Endpoints.Room.leaveRoom.send(ImmutableRoomRequest
-										.builder()
-										.authToken(androidAuthManager.getAuthToken())
-										.roomId(currentRoomId)
-										.build(),
-								context.getString(R.string.user_agent)
-						);
-					} catch (IOException ex) {
-						ex.printStackTrace();
-						ex.printStackTrace();
-						Gdx.app.error("AndroidLobbyManager", "Couldn't leave the room");
-					}
+		AsyncTask.execute(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Endpoints.Room.leaveRoom.send(ImmutableRoomRequest
+									.builder()
+									.authToken(androidAuthManager.getAuthToken())
+									.roomId(currentRoomId)
+									.build(),
+							context.getString(R.string.user_agent)
+					);
+					context.postRunnable(new Runnable() {
+						@Override
+						public void run() {
+							roomListener.onLeave();
+						}
+					});
+				} catch (IOException ex) {
+					ex.printStackTrace();
+					ex.printStackTrace();
+					Gdx.app.error("AndroidLobbyManager", "Couldn't leave the room");
 				}
-			});
-		}
+			}
+		});
 	}
 
 	@Override
 	public void createRoom(final RoomOptions options, final LobbyRoomListener lobbyRoomListener) {
-		creator = lobbyRoomListener;
+		roomListener = lobbyRoomListener;
 		AsyncTask.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -260,7 +263,7 @@ class AndroidLobbyManager implements LobbyManager {
 		});
 	}
 
-	private void processRoomResponse(RoomResponse response, LobbyRoomListener lobbyRoomListener) {
+	private boolean processRoomResponse(RoomResponse response, LobbyRoomListener lobbyRoomListener) {
 		LobbyRoom room = null;
 		if (response.getRoom() != null) {
 			room = Util.toCore(response.getRoom());
@@ -268,13 +271,12 @@ class AndroidLobbyManager implements LobbyManager {
 		switch (response.getUpdateType()) {
 			case EnteredRoom:
 				lobbyRoomListener.onEnter(room);
-				break;
+				return true;
 			case UpdateRoom:
 				assert room != null;
 				lobbyRoomListener.onPlayerListUpdate(room.getPlayers());
-				break;
+				return true;
 			case StartGame:
-				exitRoom();
 				assert room != null;
 				assert response.getGameId() != null;
 				lobbyRoomListener.onPlay(
@@ -285,11 +287,12 @@ class AndroidLobbyManager implements LobbyManager {
 						new Avatar(response.getGamePlayers().get(2)),
 						new Avatar(response.getGamePlayers().get(3))
 				);
-				break;
+				return false;
 			case LeaveRoom:
-				exitRoom();
 				lobbyRoomListener.onCancel(response.getLeaveMessage());
-				break;
+				return false;
+			default:
+				throw new IllegalArgumentException("Invalid response type");
 		}
 	}
 

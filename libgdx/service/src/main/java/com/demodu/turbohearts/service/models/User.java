@@ -9,7 +9,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name=User.TABLE)
 public class User {
-	public static final String TABLE = "User";
+	public static final String TABLE = "Users";
 
 	private String id;
 	private String username;

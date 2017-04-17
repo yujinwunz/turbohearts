@@ -18,12 +18,15 @@ import com.demodu.turbohearts.service.models.User;
 import com.demodu.turbohearts.service.models.UserSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import org.hibernate.LockMode;
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.persistence.LockModeType;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -69,7 +72,7 @@ public class LobbyResource {
 					return true;
 				}
 			});
-			fireLobbyListEvent(session);
+			fireLobbyListEvent(getLobbyRooms(session));
 		});
 	}
 
@@ -89,7 +92,7 @@ public class LobbyResource {
 
 			bumpVersion();
 
-			fireLobbyListEvent(session);
+			fireLobbyListEvent(getLobbyRooms(session));
 
 			return Response.status(200).entity(
 					ImmutableRoomResponse
@@ -107,6 +110,7 @@ public class LobbyResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response enterRoom(RoomRequest request) {
 		return AuthHelpers.withLoginAndDb(request, (UserSession userSession, Session session) -> {
+			List<LobbyRoom> lobbyRooms = getLobbyRooms(session);
 			LobbyRoom lobbyRoom = getLobbyRoom(request.getRoomId(), session);
 
 			if (lobbyRoom == null) {
@@ -121,7 +125,7 @@ public class LobbyResource {
 
 			fireRoomUpdateEvent(lobbyRoom, session);
 
-			fireLobbyListEvent(session);
+			fireLobbyListEvent(lobbyRooms);
 			return Response.status(200).entity(
 					ImmutableRoomResponse
 							.builder()
@@ -138,6 +142,7 @@ public class LobbyResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response leaveRoom(RoomRequest request) {
 		return AuthHelpers.withLoginAndDb(request, (UserSession userSession, Session session) -> {
+			List<LobbyRoom> lobbyRooms = getLobbyRooms(session);
 			LobbyRoom lobbyRoom = getLobbyRoom(request.getRoomId(), session);
 
 			if (lobbyRoom == null) {
@@ -156,13 +161,15 @@ public class LobbyResource {
 			if (lobbyRoom.getPlayers().size() == 0 ||
 					lobbyRoom.getHost().equals(userSession.getUser())) {
 				session.delete(lobbyRoom);
+				lobbyRooms.removeIf((LobbyRoom l) ->
+						l.getId() == lobbyRoom.getId());
 				fireRoomDeleteEvent(lobbyRoom, session);
 			} else {
 				session.update(lobbyRoom);
 				fireRoomUpdateEvent(lobbyRoom, session);
 			}
 
-			fireLobbyListEvent(session);
+			fireLobbyListEvent(lobbyRooms);
 			return Response.status(200).entity(
 					ImmutableRoomResponse
 							.builder()
@@ -311,12 +318,11 @@ public class LobbyResource {
 	}
 
 	private LobbyRoom getLobbyRoom(int roomId, Session session) {
-		List<LobbyRoom> lobbyRoomList =
-				session.createQuery("from LobbyRoom where id=?", LobbyRoom.class).setParameter(0, roomId).list();
-		if (lobbyRoomList.size() == 0) {
+		try {
+			return session.load(LobbyRoom.class, roomId, LockMode.PESSIMISTIC_WRITE);
+		} catch (ObjectNotFoundException ex) {
 			return null;
 		}
-		return lobbyRoomList.get(0);
 	}
 
 	private void fireRoomUpdateEvent(LobbyRoom room, Session session) {
@@ -352,9 +358,13 @@ public class LobbyResource {
 		}
 	}
 
-	private synchronized void fireLobbyListEvent(Session session) {
-		List<LobbyRoom> lobbyRooms =
-				session.createQuery("from LobbyRoom", LobbyRoom.class).list();
+	private List<LobbyRoom> getLobbyRooms(Session session) {
+		return session.createQuery("from LobbyRoom", LobbyRoom.class)
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+				.list();
+	}
+
+	private synchronized void fireLobbyListEvent(List<LobbyRoom> lobbyRooms) {
 		List<LobbyListResponse.LobbyRoom> apiList = new ArrayList<>();
 		for (LobbyRoom room : lobbyRooms) {
 			apiList.add(room.toApi());
