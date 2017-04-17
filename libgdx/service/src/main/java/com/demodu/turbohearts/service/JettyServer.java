@@ -37,6 +37,12 @@ public class JettyServer {
 	@Parameter(names = "-keystore-pass", password = true)
 	private String keystorePass = null;
 
+	@Parameter(names="-hostname")
+	private String hostName="http://localhost";
+
+	@Parameter(names="-port")
+	private int port=8080;
+
 	public static void main(String args[]) {
 		JettyServer main = new JettyServer();
 
@@ -86,8 +92,8 @@ public class JettyServer {
 		}
 	}
 
-	private static void setUpAndStartServer(SslContextFactory sslContextFactory) {
-		URI baseUri = UriBuilder.fromUri("http://localhost/").port(8080).build();
+	private void setUpAndStartServer(SslContextFactory sslContextFactory) {
+		URI baseUri = UriBuilder.fromUri(hostName).port(port).build();
 		ResourceConfig config = new ResourceConfig(
 				LoginResource.class,
 				LobbyResource.class,
