@@ -1,8 +1,11 @@
 package com.demodu.turbohearts.service;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import com.demodu.turbohearts.service.game.LiveGameManager;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.hibernate.boot.MetadataSources;
@@ -16,24 +19,46 @@ import javax.ws.rs.core.UriBuilder;
 
 import static com.demodu.turbohearts.service.Global.sessionFactory;
 
-/**
- * Created by yujinwunz on 9/04/2017.
- */
-
 public class JettyServer {
 
 	public static final int BACKGROUND_THREADS = 2;
 	public static EventBus eventBus;
 	public static LiveGameManager liveGameManager;
 
+	@Parameter(names = "ssl")
+	private boolean sslEnabled = false;
+
+	@Parameter(names = "keystore-path")
+	private String keystorePath = null;
+
+	@Parameter(names = "keystore-alias")
+	private String keystoreAlias = null;
+
+	@Parameter(names = "keystore-pass", password = true)
+	private String keystorePass = null;
+
 	public static void main(String args[]) {
+		JettyServer main = new JettyServer();
+
+		JCommander jCommander = new JCommander();
+		jCommander.addObject(main);
+		jCommander.parse(args);
+
+		main.run();
+	}
+
+	private void run() {
+
 		setUpHibernate();
 
 		setupEventPipeline();
 
 		setupGameManager();
 
-		setUpAndStartServer();
+		SslContextFactory factory = setUpSsl();
+
+		setUpAndStartServer(factory);
+
 	}
 
 	private static void setupGameManager() {
@@ -47,7 +72,21 @@ public class JettyServer {
 		}
 	}
 
-	private static void setUpAndStartServer() {
+	private SslContextFactory setUpSsl() {
+
+		if (sslEnabled) {
+			SslContextFactory factory = new SslContextFactory();
+			factory.setCertAlias(keystoreAlias);
+			factory.setKeyStorePath(keystorePath);
+			factory.setKeyStorePassword(keystorePass);
+			factory.setTrustStorePath(keystorePath);
+			return factory;
+		} else {
+			return null;
+		}
+	}
+
+	private static void setUpAndStartServer(SslContextFactory sslContextFactory) {
 		URI baseUri = UriBuilder.fromUri("http://localhost/").port(8080).build();
 		ResourceConfig config = new ResourceConfig(
 				LoginResource.class,
@@ -59,7 +98,7 @@ public class JettyServer {
 			put("com.sun.jersey.api.json.POJOMappingFeature", true);
 		}});
 
-		Server server = JettyHttpContainerFactory.createServer(baseUri, config);
+		Server server = JettyHttpContainerFactory.createServer(baseUri, sslContextFactory, config);
 
 		try {
 			server.start();
