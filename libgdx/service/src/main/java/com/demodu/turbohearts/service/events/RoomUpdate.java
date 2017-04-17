@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.immutables.value.Value;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 @Value.Immutable
@@ -22,10 +24,24 @@ public abstract class RoomUpdate extends Event {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public abstract LobbyListResponse.LobbyRoom getRoom();
 
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public abstract Integer getGameId();
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public abstract List<String> getPlayerNames();
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public abstract String getForUserId();
+
 	public abstract UpdateType getType();
 
 	public enum UpdateType {
 		Update,
-		Delete
+		Delete,
+		Start
 	}
+
 }

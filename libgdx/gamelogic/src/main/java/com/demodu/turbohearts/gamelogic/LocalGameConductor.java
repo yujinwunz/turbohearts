@@ -206,7 +206,7 @@ public class LocalGameConductor extends com.demodu.turbohearts.gamelogic.GameCon
 				// Report action
 				for (com.demodu.turbohearts.gamelogic.Card c : players[i].actionStage) {
 					for (PlayerPosition pos : PlayerPosition.values()) {
-						players[(pos.getIndex() - i + 4) % 4].actor.reportCharge(pos, c);
+						players[(i - pos.getIndex() + 4) % 4].actor.reportCharge(pos, c);
 					}
 				}
 			}

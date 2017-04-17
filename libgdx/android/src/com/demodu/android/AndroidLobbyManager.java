@@ -3,15 +3,6 @@ package com.demodu.android;
 import android.os.AsyncTask;
 
 import com.badlogic.gdx.Gdx;
-import com.demodu.turbohearts.crossplat.auth.Avatar;
-import com.demodu.turbohearts.crossplat.auth.Profile;
-import com.demodu.turbohearts.crossplat.lobby.ExampleMatchManager;
-import com.demodu.turbohearts.crossplat.lobby.LobbyManager;
-import com.demodu.turbohearts.crossplat.lobby.LobbyRoom;
-import com.demodu.turbohearts.crossplat.lobby.MatchId;
-import com.demodu.turbohearts.crossplat.lobby.RoomOptions;
-import com.demodu.turbohearts.gamelogic.LocalGameConductor;
-import com.demodu.turbohearts.game.player.RandomAI;
 import com.demodu.turbohearts.api.endpoints.Endpoint;
 import com.demodu.turbohearts.api.endpoints.Endpoints;
 import com.demodu.turbohearts.api.messages.CreateRoomRequest;
@@ -21,6 +12,13 @@ import com.demodu.turbohearts.api.messages.ImmutableRoomRequest;
 import com.demodu.turbohearts.api.messages.LobbyListResponse;
 import com.demodu.turbohearts.api.messages.RoomRequest;
 import com.demodu.turbohearts.api.messages.RoomResponse;
+import com.demodu.turbohearts.crossplat.auth.Avatar;
+import com.demodu.turbohearts.crossplat.auth.Profile;
+import com.demodu.turbohearts.crossplat.lobby.ExampleMatchManager;
+import com.demodu.turbohearts.crossplat.lobby.LobbyManager;
+import com.demodu.turbohearts.crossplat.lobby.LobbyRoom;
+import com.demodu.turbohearts.crossplat.lobby.MatchId;
+import com.demodu.turbohearts.crossplat.lobby.RoomOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -265,16 +263,7 @@ class AndroidLobbyManager implements LobbyManager {
 	private void processRoomResponse(RoomResponse response, LobbyRoomListener lobbyRoomListener) {
 		LobbyRoom room = null;
 		if (response.getRoom() != null) {
-			List<Avatar> avatarList = new ArrayList<>();
-			for (String name : response.getRoom().getPlayerNames()) {
-				avatarList.add(new Avatar(name));
-			}
-			room = new LobbyRoom(
-					response.getRoom().getId(),
-					response.getRoom().getTitle(),
-					avatarList,
-					avatarList.get(0)
-			);
+			room = Util.toCore(response.getRoom());
 		}
 		switch (response.getUpdateType()) {
 			case EnteredRoom:
@@ -289,15 +278,12 @@ class AndroidLobbyManager implements LobbyManager {
 				assert room != null;
 				assert response.getGameId() != null;
 				lobbyRoomListener.onPlay(
-						new LocalGameConductor(
-								new RandomAI(),
-								new RandomAI(),
-								new RandomAI()),
+						new AndroidGameConductor(context, androidAuthManager, response.getGameId()),
 						new ExampleMatchManager(),
 						new MatchId(response.getGameId()),
-						room.getPlayers().get(1),
-						room.getPlayers().get(2),
-						room.getPlayers().get(3)
+						new Avatar(response.getGamePlayers().get(1)),
+						new Avatar(response.getGamePlayers().get(2)),
+						new Avatar(response.getGamePlayers().get(3))
 				);
 				break;
 			case LeaveRoom:
@@ -308,7 +294,25 @@ class AndroidLobbyManager implements LobbyManager {
 	}
 
 	@Override
-	public void startGame() {
+	public synchronized void startGame() {
+		AsyncTask.execute(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					final RoomResponse response;
+					response = Endpoints.Room.startGame.send(ImmutableRoomRequest
+							.builder()
+							.roomId(currentRoomId)
+							.authToken(androidAuthManager.getAuthToken())
+							.build(),
+							context.getString(R.string.user_agent)
+					);
 
+					Gdx.app.log("AndroidLobbyManager", "Got response from start game: " + response.toJsonString());
+				} catch (IOException e) {
+					Gdx.app.log("AndroidLobbyManager", "Could not start game");
+				}
+			}
+		});
 	}
 }

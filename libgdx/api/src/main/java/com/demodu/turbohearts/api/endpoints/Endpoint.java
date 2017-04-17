@@ -54,10 +54,12 @@ public class Endpoint <Req extends ApiMessage, Res extends ApiMessage> {
 					return Res.objectMapper.readValue(conn.getInputStream(), getResponseType());
 				} else {
 					System.out.println(conn.getResponseCode());
+					System.out.println(convertStreamToString(conn.getErrorStream()));
 					System.out.println(conn.getResponseMessage());
 					break;
 				}
 			} catch (IOException ex) {
+				System.err.println("api send failed. Retrying. Error: " + ex.getMessage());
 				try {
 					Thread.sleep(RETRY_COOLDOWN_MS);
 				} catch (InterruptedException ex2) {

@@ -67,16 +67,16 @@ public class LiveGame {
 		playerViews.get(user.getId()).pollEvents(afterEventNumber, handler);
 	}
 
-	public void playMove(User user, List<PollGameResponse.Card> cards)
+	public void playMove(User user, List<PollGameResponse.Card> cards, int lastEventNumber)
 			throws MoveReporter.InvalidMoveException, UserNotInGameException {
 		if (!playerViews.containsKey(user.getId())) {
 			throw new UserNotInGameException(
 					"User " + user.getUsername() + " is not in game " + dbEntry.getId());
 		}
-		playerViews.get(user.getId()).playMove(Util.toCore(cards));
+		playerViews.get(user.getId()).playMove(Util.toCore(cards), lastEventNumber);
 	}
 
-	public class UserNotInGameException extends Exception {
+	public static class UserNotInGameException extends Exception {
 		public UserNotInGameException() {
 		}
 
@@ -87,5 +87,17 @@ public class LiveGame {
 		public UserNotInGameException(String message, Throwable cause) {
 			super(message, cause);
 		}
+	}
+
+	public List<User> getPlayers() {
+		List<User> ret = new ArrayList<>();
+		for (Participation p : dbEntry.getParticipants()) {
+			ret.add(p.getUser());
+		}
+		return ret;
+	}
+
+	public Game getDbEntry() {
+		return dbEntry;
 	}
 }

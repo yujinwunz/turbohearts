@@ -6,11 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.immutables.value.Value;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
-/**
- * Created by yujinwunz on 13/04/2017.
- */
+import javax.annotation.Nullable;
 
 @Value.Immutable
 @JsonSerialize(as=ImmutableRoomResponse.class)
@@ -19,6 +17,8 @@ public abstract class RoomResponse extends ApiMessage {
 
 	public abstract UpdateType getUpdateType();
 
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public abstract LobbyListResponse.LobbyRoom getRoom();
 
 	@Nullable
@@ -28,6 +28,10 @@ public abstract class RoomResponse extends ApiMessage {
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public abstract String getLeaveMessage();
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public abstract List<String> getGamePlayers();
 
 	public enum UpdateType {
 		EnteredRoom,

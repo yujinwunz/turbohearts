@@ -51,7 +51,8 @@ public class JettyServer {
 		URI baseUri = UriBuilder.fromUri("http://localhost/").port(8080).build();
 		ResourceConfig config = new ResourceConfig(
 				LoginResource.class,
-				LobbyResource.class
+				LobbyResource.class,
+				GameResource.class
 		);
 
 		config.addProperties(new HashMap<String, Object>() {{

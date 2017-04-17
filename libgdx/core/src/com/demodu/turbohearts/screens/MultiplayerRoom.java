@@ -86,7 +86,9 @@ public class MultiplayerRoom extends ScreenAdapter {
 			public void onPlayerListUpdate(List<Avatar> players) {
 				// Re-enable the buttons after a botched start game.
 				leaveButton.setDisabled(false);
-				startButton.setDisabled(false);
+				if (hosting) {
+					startButton.setDisabled(false);
+				}
 				updatePlayers(players);
 			}
 

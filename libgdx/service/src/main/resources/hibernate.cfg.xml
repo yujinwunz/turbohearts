@@ -39,6 +39,8 @@
         <mapping class="com.demodu.turbohearts.service.models.LobbyRoom"/>
         <mapping class="com.demodu.turbohearts.service.models.User"/>
         <mapping class="com.demodu.turbohearts.service.models.UserSession"/>
+        <mapping class="com.demodu.turbohearts.service.models.Game"/>
+        <mapping class="com.demodu.turbohearts.service.models.Participation"/>
 
     </session-factory>
 

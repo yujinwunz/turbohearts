@@ -7,12 +7,16 @@ import com.demodu.turbohearts.api.messages.LobbyListRequest;
 import com.demodu.turbohearts.api.messages.LobbyListResponse;
 import com.demodu.turbohearts.api.messages.RoomRequest;
 import com.demodu.turbohearts.api.messages.RoomResponse;
+import com.demodu.turbohearts.service.events.Event;
 import com.demodu.turbohearts.service.events.ImmutableLobbyListUpdate;
 import com.demodu.turbohearts.service.events.ImmutableRoomUpdate;
 import com.demodu.turbohearts.service.events.LobbyListUpdate;
 import com.demodu.turbohearts.service.events.RoomUpdate;
+import com.demodu.turbohearts.service.game.LiveGame;
 import com.demodu.turbohearts.service.models.LobbyRoom;
+import com.demodu.turbohearts.service.models.User;
 import com.demodu.turbohearts.service.models.UserSession;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.hibernate.Session;
 
@@ -106,14 +110,7 @@ public class LobbyResource {
 			LobbyRoom lobbyRoom = getLobbyRoom(request.getRoomId(), session);
 
 			if (lobbyRoom == null) {
-				return Response.status(200).entity(
-						ImmutableRoomResponse
-								.builder()
-								.updateType(RoomResponse.UpdateType.LeaveRoom)
-								.room(null)
-								.leaveMessage("Room does not exist")
-								.build()
-				).build();
+				return Response.status(404).entity("Room does not exist").build();
 			}
 
 			lobbyRoom.getPlayers().add(userSession.getUser());
@@ -144,25 +141,11 @@ public class LobbyResource {
 			LobbyRoom lobbyRoom = getLobbyRoom(request.getRoomId(), session);
 
 			if (lobbyRoom == null) {
-				return Response.status(200).entity(
-						ImmutableRoomResponse
-								.builder()
-								.updateType(RoomResponse.UpdateType.LeaveRoom)
-								.room(null)
-								.leaveMessage("Room does not exist")
-								.build()
-				).build();
+				return Response.status(404).entity("Room does not exist").build();
 			}
 
 			if (!lobbyRoom.hasPlayer(userSession.getUser())) {
-				return Response.status(200).entity(
-						ImmutableRoomResponse
-								.builder()
-								.updateType(RoomResponse.UpdateType.LeaveRoom)
-								.room(null)
-								.leaveMessage("You are not in the room")
-								.build()
-				).build();
+				return Response.status(403).entity("You are not in the room").build();
 			}
 
 			lobbyRoom.removePlayer(userSession.getUser());
@@ -191,6 +174,45 @@ public class LobbyResource {
 	}
 
 	@POST
+	@Path("room/start")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response startGame(RoomRequest request) {
+		return AuthHelpers.withLoginAndDb(request, (UserSession userSession, Session session) -> {
+			LobbyRoom room = getLobbyRoom(request.getRoomId(), session);
+			if (room == null) {
+				return Response.status(404).entity("Room does not exist").build();
+			} else if (!room.getHost().equals(userSession.getUser())) {
+				return Response.status(403)
+						.entity("You must be the host of the room to start the game").build();
+			} else if (room.getPlayers().size() != 4)  {
+				return Response.status(422)
+						.entity("There must be four players to start the game").build();
+			} else {
+				room.setGame(JettyServer.liveGameManager.newGame(session, room.getPlayers()).getDbEntry());
+				room.setVersion(room.getVersion()+1);
+				session.update(room);
+				fireStartGameEvent(room, session);
+				try {
+					return Response.status(200).entity(
+							ImmutableRoomResponse
+									.builder()
+									.updateType(RoomResponse.UpdateType.StartGame)
+									.room(room.toApi())
+									.addAllGamePlayers(room.getGame().getNameListFromPerspective(userSession.getUser()))
+									.gameId(room.getGame().getId())
+									.build()
+					).build();
+				}catch (LiveGame.UserNotInGameException ex) {
+					return Response.status(403)
+						.entity("You are not in the game").build();
+
+				}
+			}
+		});
+	}
+
+	@POST
 	@Path("room/poll")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -199,53 +221,91 @@ public class LobbyResource {
 			LobbyRoom room = getLobbyRoom(request.getRoomId(), session);
 
 			if (room == null) {
-				response.resume(Response.status(200).entity(
-						ImmutableRoomResponse
-								.builder()
-								.updateType(RoomResponse.UpdateType.LeaveRoom)
-								.room(null)
-								.leaveMessage("Room does not exist")
-				).build());
+				response.resume(Response.status(404).entity("Room does not exist").build());
 			} else if (room.hasPlayer(userSession.getUser()) == false) {
-				response.resume(Response.status(200).entity(
-						ImmutableRoomResponse
-								.builder()
-								.updateType(RoomResponse.UpdateType.LeaveRoom)
-								.room(null)
-								.leaveMessage("You're not in the room")
-				).build());
+				response.resume(Response.status(403).entity("You're not in the room").build());
 			} else {
 
-				JettyServer.eventBus.subscribe(RoomUpdate.class, (RoomUpdate event) -> {
-					if (event.getRoom().getId() != request.getRoomId()) {
-						return true;
-					}
-					switch (event.getType()) {
-						case Update:
-							if (event.getRoom().getVersion() > request.getLatestVersion()) {
-								response.resume(Response.status(200).entity(
-										ImmutableRoomResponse
-												.builder()
-												.updateType(RoomResponse.UpdateType.UpdateRoom)
-												.room(event.getRoom())
-												.build()
-								).build());
-								return false;
-							} else {
-								return true;
-							}
-						case Delete:
+				if (room.getVersion() > request.getLatestVersion()) {
+					if (room.getGame() != null) {
+						try {
 							response.resume(Response.status(200).entity(
 									ImmutableRoomResponse
 											.builder()
-											.updateType(RoomResponse.UpdateType.LeaveRoom)
-											.leaveMessage("The room was closed")
+											.updateType(RoomResponse.UpdateType.StartGame)
+											.room(room.toApi())
+											.gameId(room.getGame().getId())
+											.addAllGamePlayers(room.getGame().getNameListFromPerspective(userSession.getUser()))
 											.build()
 							).build());
-							return false;
+
+						} catch (LiveGame.UserNotInGameException ex) {
+							response.resume(Response.status(403).entity("You're not in the room").build());
+						}
+					} else {
+						response.resume(Response.status(200).entity(
+								ImmutableRoomResponse
+										.builder()
+										.updateType(RoomResponse.UpdateType.UpdateRoom)
+										.room(room.toApi())
+										.build()
+						).build());
 					}
-					return false;
-				});
+				} else {
+					JettyServer.eventBus.subscribe(RoomUpdate.class, (RoomUpdate event) -> {
+						if (event.getRoom().getId() != request.getRoomId()) {
+							return true;
+						}
+						switch (event.getType()) {
+							case Update:
+								if (event.getRoom().getVersion() > request.getLatestVersion()) {
+									response.resume(Response.status(200).entity(
+											ImmutableRoomResponse
+													.builder()
+													.updateType(RoomResponse.UpdateType.UpdateRoom)
+													.room(event.getRoom())
+													.build()
+									).build());
+									return false;
+								} else {
+									return true;
+								}
+							case Delete:
+								response.resume(Response.status(200).entity(
+										ImmutableRoomResponse
+												.builder()
+												.updateType(RoomResponse.UpdateType.LeaveRoom)
+												.leaveMessage("The room was closed")
+												.build()
+								).build());
+								return false;
+							case Start:
+								try {
+									System.out.println("Received start event " + Event.objectMapper.writeValueAsString(event) + ". I am " + userSession.getUser().getId());
+								} catch (JsonProcessingException ex) {
+									System.out.println("Got start event but was unable to parse it");
+								}
+								if (event.getForUserId().equals(userSession.getUser().getId())) {
+									if (event.getRoom().getVersion() > request.getLatestVersion()) {
+										System.out.println("Sending response");
+										response.resume(Response.status(200).entity(
+												ImmutableRoomResponse
+														.builder()
+														.updateType(RoomResponse.UpdateType.StartGame)
+														.room(event.getRoom())
+														.addAllGamePlayers(event.getPlayerNames())
+														.gameId(event.getGameId())
+														.build()
+										).build());
+									}
+									return false;
+								} else {
+									return true;
+								}
+						}
+						return true;
+					});
+				}
 			}
 		});
 	}
@@ -273,6 +333,23 @@ public class LobbyResource {
 				.type(RoomUpdate.UpdateType.Delete)
 				.build()
 		);
+	}
+
+	private void fireStartGameEvent(LobbyRoom room, Session session) {
+		for (User u :room.getPlayers()) {
+			try {
+				JettyServer.eventBus.fireEvent(ImmutableRoomUpdate.builder()
+						.room(room.toApi())
+						.type(RoomUpdate.UpdateType.Start)
+						.playerNames(room.getGame().getNameListFromPerspective(u))
+						.forUserId(u.getId())
+						.gameId(room.getGame().getId())
+						.build()
+				);
+			} catch (LiveGame.UserNotInGameException ex) {
+				throw new UnknownError("User list in game does not match user list in lobby");
+			}
+		}
 	}
 
 	private synchronized void fireLobbyListEvent(Session session) {

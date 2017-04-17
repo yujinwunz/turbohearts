@@ -15,14 +15,14 @@ import java.util.Set;
 
 
 public class LiveGameManager {
-	Map<Integer, LiveGame> liveGames = new HashMap<Integer, LiveGame>();
+	private Map<Integer, LiveGame> liveGames = new HashMap<Integer, LiveGame>();
 
-	public int newGame(Session session, Set<User> users) {
+	public LiveGame newGame(Session session, Set<User> users) {
 		List<User> orderedUsers = new ArrayList<>(users);
 		Collections.shuffle(orderedUsers);
 		LiveGame liveGame = LiveGame.create(session, orderedUsers);
 		liveGames.put(liveGame.getId(), liveGame);
-		return liveGame.getId();
+		return liveGame;
 	}
 
 	public void pollEvents(int gameId, int eventsAfter, User user, GameEventHandler handler)
@@ -33,7 +33,7 @@ public class LiveGameManager {
 		liveGames.get(gameId).pollEvents(user, eventsAfter, handler);
 	}
 
-	public void playMove(int gameId, User user, List<PollGameResponse.Card> cards)
+	public void playMove(int gameId, User user, List<PollGameResponse.Card> cards, int lastEventNumber)
 			throws MoveReporter.InvalidMoveException
 			, InvalidGameIdException
 			, LiveGame.UserNotInGameException
@@ -41,7 +41,7 @@ public class LiveGameManager {
 		if (!liveGames.containsKey(gameId)) {
 			throw new InvalidGameIdException("Game id not found: " + gameId);
 		}
-		liveGames.get(gameId).playMove(user, cards);
+		liveGames.get(gameId).playMove(user, cards, lastEventNumber);
 	}
 
 	public interface GameEventHandler {

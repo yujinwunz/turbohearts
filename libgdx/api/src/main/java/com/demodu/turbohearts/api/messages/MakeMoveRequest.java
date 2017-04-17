@@ -12,5 +12,6 @@ import java.util.List;
 @JsonDeserialize(as=ImmutableMakeMoveRequest.class)
 public abstract class MakeMoveRequest extends AuthenticatedRequest {
 	public abstract int getGameId();
+	public abstract int getLastEventNumber();
 	public abstract List<PollGameResponse.Card> getMove();
 }

@@ -8,6 +8,8 @@ import com.demodu.turbohearts.gamelogic.GameConductor;
 import com.demodu.turbohearts.gamelogic.MoveReporter;
 import com.demodu.turbohearts.gamelogic.PlayerActor;
 import com.demodu.turbohearts.api.messages.PollGameResponse;
+import com.demodu.turbohearts.service.events.Event;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +34,11 @@ public class LivePlayerView implements PlayerActor {
 	private synchronized void onNewEvent(PollGameResponse.GameEvent event) {
 		// clients resuming from a game doesn't need to know play by play specifics of previous
 		// rounds to reconstruct the current round.
+		try {
+			System.out.println("Got new game event " + Event.objectMapper.writeValueAsString(event));
+		} catch (JsonProcessingException ex) {
+			System.out.println("Couldn't print new event " + event);
+		}
 		if (event.getEventType() == PollGameResponse.EventType.GameEnd ||
 				event.getEventType() == PollGameResponse.EventType.RoundEnd) {
 			while (!pastEvents.isEmpty()
@@ -61,9 +68,22 @@ public class LivePlayerView implements PlayerActor {
 		}
 	}
 
-	public void playMove(List<Card> move) throws MoveReporter.InvalidMoveException {
-		currentMoveReporter.reportMove(move);
+	public synchronized void playMove(List<Card> move, int lastEventNumber)
+			throws MoveReporter.InvalidMoveException {
+		if (lastEventNumber < currentEventNumber && currentMoveReporter == null) {
+			return;
+		}
+		if (lastEventNumber > currentEventNumber) {
+			throw new MoveReporter.InvalidMoveException("Version number is invalid for this game");
+		}
+		if (currentMoveReporter == null) {
+			throw new MoveReporter.InvalidMoveException("Not expecting a move right now");
+		}
+		incrementEventNumber();
+		MoveReporter temp = currentMoveReporter;
 		currentMoveReporter = null;
+
+		temp.reportMove(move);
 	}
 
 	@Override
@@ -77,6 +97,7 @@ public class LivePlayerView implements PlayerActor {
 				.build()
 		);
 	}
+
 
 	@Override
 	public synchronized void reportPlay(GameConductor.PlayerPosition position, Card card) {
@@ -154,6 +175,6 @@ public class LivePlayerView implements PlayerActor {
 	}
 
 	private synchronized int incrementEventNumber() {
-		return currentEventNumber ++;
+		return ++currentEventNumber;
 	}
 }

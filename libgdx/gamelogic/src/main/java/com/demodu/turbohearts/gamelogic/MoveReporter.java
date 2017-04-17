@@ -16,7 +16,7 @@ public abstract class MoveReporter {
 
 	protected abstract void reportMoveImpl(List<Card> move);
 
-	public class InvalidMoveException extends Exception {
+	public static class InvalidMoveException extends Exception {
 		public InvalidMoveException(String message, Exception cause) {
 			super(message, new Exception());
 		}

@@ -1,6 +1,7 @@
 package com.demodu.turbohearts.service;
 
 import com.demodu.turbohearts.service.events.Event;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.eclipse.jetty.util.BlockingArrayQueue;
 
@@ -28,7 +29,11 @@ public class EventBus {
 	}
 
 	public void fireEvent(Event event) {
-
+		try {
+			System.out.println("Got event: " + Event.objectMapper.writeValueAsString(event));
+		} catch (JsonProcessingException ex) {
+			System.out.println("Couldn't write event as Json: " + event);
+		}
 		synchronized (handlerMapping) {
 			List<HandlerWrapper> handlers = handlerMapping.getOrDefault(
 				event.getEventClass(),

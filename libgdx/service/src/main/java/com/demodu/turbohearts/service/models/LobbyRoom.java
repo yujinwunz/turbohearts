@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,6 +29,7 @@ public class LobbyRoom {
 	private String name;
 	private Set<User> players;
 	private User host;
+	private Game game;
 
 	public LobbyRoom() {
 		// Just for you, Hibernate <3
@@ -39,6 +41,17 @@ public class LobbyRoom {
 		this.version = version;
 		this.host = host;
 	}
+
+	@Nullable
+	@ManyToOne
+	public Game getGame() {
+		return game;
+	}
+
+	public void setGame(Game game) {
+		this.game = game;
+	}
+
 
 	@ManyToOne
 	public User getHost() {

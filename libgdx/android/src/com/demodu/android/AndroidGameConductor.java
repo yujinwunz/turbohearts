@@ -1,6 +1,7 @@
 package com.demodu.android;
 
 import com.badlogic.gdx.Gdx;
+import com.demodu.turbohearts.api.messages.MakeMoveResponse;
 import com.demodu.turbohearts.gamelogic.Card;
 import com.demodu.turbohearts.gamelogic.GameConductor;
 import com.demodu.turbohearts.gamelogic.MoveReporter;
@@ -9,6 +10,7 @@ import com.demodu.turbohearts.api.endpoints.Endpoints;
 import com.demodu.turbohearts.api.messages.ImmutableMakeMoveRequest;
 import com.demodu.turbohearts.api.messages.ImmutablePollGameRequest;
 import com.demodu.turbohearts.api.messages.PollGameResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,6 +22,7 @@ public class AndroidGameConductor extends GameConductor {
 	private AndroidAuthManager authManager;
 	private int gameId;
 	private AndroidLauncher context;
+	private int latestEventNumber;
 
 	public AndroidGameConductor(AndroidLauncher context, AndroidAuthManager authManager, int gameId) {
 		this.authManager = authManager;
@@ -32,14 +35,14 @@ public class AndroidGameConductor extends GameConductor {
 		activePollingThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				int latestActionNumber = -1;
+				latestEventNumber = -1;
 				while (true) {
 					try {
 						PollGameResponse response = Endpoints.Game.pollGame.send(
 								ImmutablePollGameRequest.builder()
 								.authToken(authManager.getAuthToken())
 								.gameId(gameId)
-								.latestActionNumber(latestActionNumber)
+								.latestActionNumber(latestEventNumber)
 								.build()
 						, context.getString(R.string.user_agent));
 
@@ -130,7 +133,7 @@ public class AndroidGameConductor extends GameConductor {
 									});
 									break;
 							}
-							latestActionNumber = event.getEventNumber();
+							latestEventNumber = event.getEventNumber();
 						}
 					} catch (IOException ex) {
 						Gdx.app.log("AndroidGameConductor", "Polling for game updates failed");
@@ -152,13 +155,21 @@ public class AndroidGameConductor extends GameConductor {
 			@Override
 			public void run() {
 				try {
-					Endpoints.Game.makeMove.send(
+					Gdx.app.log("AndroidGameConductor", "Making move");
+					MakeMoveResponse response = Endpoints.Game.makeMove.send(
 							ImmutableMakeMoveRequest
-							.builder()
-							.authToken(authManager.getAuthToken())
-							.addAllMove(Util.toApi(cards))
-							.build()
+									.builder()
+									.authToken(authManager.getAuthToken())
+									.addAllMove(Util.toApi(cards))
+									.gameId(gameId)
+									.lastEventNumber(latestEventNumber)
+									.build()
 					, context.getString(R.string.user_agent));
+					try {
+						Gdx.app.log("AndroidGameConductor", "Got response " + response.toJsonString());
+					} catch (JsonProcessingException ex) {
+						Gdx.app.log("AndroidGameConductor", "Couldn't print response " + response);
+					}
 				} catch (IOException ex) {
 					ex.printStackTrace();
 					Gdx.app.error("AndroidGameConductor", "Could not send move to the server");
