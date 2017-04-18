@@ -1,7 +1,6 @@
 package com.demodu.turbohearts.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -22,9 +21,11 @@ import com.demodu.turbohearts.gwtcompat.Callable;
 
 import java.util.ArrayList;
 
-public class ScoreScreen extends ScreenAdapter {
+public class ScoreScreen extends TurboScreen {
 	private Stage stage;
 	private BitmapFont font;
+	private Callable onContinue;
+	private GameContext gameContext;
 
 	private Label makeLabel(String str) {
 		Label label = new Label(str, new Label.LabelStyle(font, Color.YELLOW));
@@ -37,6 +38,9 @@ public class ScoreScreen extends ScreenAdapter {
 			GameContext gameContext,
 			final Callable onContinue
 	) {
+		this.onContinue = onContinue;
+		this.gameContext = gameContext;
+
 		stage = new Stage(new StretchViewport(800, 480));
 		Table table = new Table();
 		table.setFillParent(true);
@@ -94,11 +98,7 @@ public class ScoreScreen extends ScreenAdapter {
 		button.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				try {
-					onContinue.call();
-				} catch (Exception e) {
-					Gdx.app.error("ScoreScreen", "On continue error, ", e);
-				}
+				onContinue.call();
 			}
 		});
 
@@ -106,7 +106,7 @@ public class ScoreScreen extends ScreenAdapter {
 		table.add(button).right().bottom().expandY().colspan(5);
 
 		stage.addActor(table);
-		Gdx.input.setInputProcessor(stage);
+		gameContext.setInputProcessor(stage);
 	}
 
 	@Override
@@ -125,6 +125,21 @@ public class ScoreScreen extends ScreenAdapter {
 	@Override
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height, true);
+	}
+
+	@Override
+	public void onBack() {
+		onContinue.call();
+	}
+
+	@Override
+	public void hide() {
+		gameContext.setInputProcessor(null);
+	}
+
+	@Override
+	public void show() {
+		gameContext.setInputProcessor(stage);
 	}
 
 	public static class RoundScore {

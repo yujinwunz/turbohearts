@@ -1,7 +1,6 @@
 package com.demodu.turbohearts.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -27,7 +26,7 @@ import com.demodu.turbohearts.gwtcompat.Callable;
 
 import java.util.List;
 
-public class MultiplayerLobby extends ScreenAdapter {
+public class MultiplayerLobby extends TurboScreen {
 
 	private LobbyManager lobbyManager;
 	private Profile profile;
@@ -44,6 +43,8 @@ public class MultiplayerLobby extends ScreenAdapter {
 	private GameContext gameContext;
 	private TextButton.TextButtonStyle buttonStyle;
 
+	private Callable onBack;
+
 	public MultiplayerLobby(
 			GameContext gameContext,
 			Profile profile,
@@ -53,6 +54,7 @@ public class MultiplayerLobby extends ScreenAdapter {
 		this.lobbyManager = lobbyManager;
 		this.profile = profile;
 		this.gameContext = gameContext;
+		this.onBack = onBack;
 
 		Table table = new Table();
 		table.setFillParent(true);
@@ -93,7 +95,7 @@ public class MultiplayerLobby extends ScreenAdapter {
 		table.add(newGame).right().bottom();
 
 		stage.addActor(table);
-		Gdx.input.setInputProcessor(stage);
+		gameContext.setInputProcessor(stage);
 	}
 
 	private Actor makeLoadingWidget() {
@@ -194,13 +196,13 @@ public class MultiplayerLobby extends ScreenAdapter {
 
 	@Override
 	public void hide() {
-		Gdx.input.setInputProcessor(null);
+		gameContext.setInputProcessor(null);
 		lobbyManager.exitLobby();
 	}
 
 	@Override
 	public void show() {
-		Gdx.input.setInputProcessor(stage);
+		gameContext.setInputProcessor(stage);
 		centerCell.setActor(makeLoadingWidget());
 		lobbyManager.enterLobby(profile, lobbyListener);
 	}
@@ -208,5 +210,10 @@ public class MultiplayerLobby extends ScreenAdapter {
 	@Override
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height);
+	}
+
+	@Override
+	public void onBack() {
+		onBack.call();
 	}
 }

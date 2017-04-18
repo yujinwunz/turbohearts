@@ -3,13 +3,10 @@ package com.demodu.turbohearts.screens;
 import com.demodu.turbohearts.GameContext;
 import com.demodu.turbohearts.gwtcompat.Callable;
 
-/**
- * Created by yujinwunz on 26/03/2017.
- */
-
 public class MainMenu extends Menu {
 	public MainMenu(
 			GameContext gameContext,
+			Callable onBack,
 			Callable singlePlayer,
 			Callable multiPlayer,
 			Callable leaderBoards
@@ -17,9 +14,10 @@ public class MainMenu extends Menu {
 		super(
 				"TurboHearts!",
 				gameContext,
+				onBack,
 				Menu.createMenuItem("Single player", singlePlayer),
 				Menu.createMenuItem("Multi player", multiPlayer),
-				Menu.createMenuItem("Leaderboards", leaderBoards)
+				Menu.createMenuItem("Rankings (lies)", leaderBoards)
 		);
 	}
 }

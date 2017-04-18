@@ -2,6 +2,9 @@ package com.demodu.turbohearts;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -15,19 +18,20 @@ import com.demodu.turbohearts.crossplat.content.ContentManager;
 import com.demodu.turbohearts.crossplat.content.ExampleContentManager;
 import com.demodu.turbohearts.crossplat.lobby.ExampleLobbyManager;
 import com.demodu.turbohearts.crossplat.lobby.LobbyManager;
+import com.demodu.turbohearts.game.TurboHeartsGame;
+import com.demodu.turbohearts.game.player.RandomAI;
 import com.demodu.turbohearts.gamelogic.LocalGameConductor;
 import com.demodu.turbohearts.gwtcompat.Callable;
-import com.demodu.turbohearts.game.player.RandomAI;
 import com.demodu.turbohearts.screens.LoginSelection;
 import com.demodu.turbohearts.screens.MainMenu;
 import com.demodu.turbohearts.screens.Menu;
 import com.demodu.turbohearts.screens.MultiplayerLobby;
 import com.demodu.turbohearts.screens.RegisterUsername;
-import com.demodu.turbohearts.game.TurboHeartsGame;
+import com.demodu.turbohearts.screens.TurboScreen;
 
 import java.util.Arrays;
 
-public class TurboHearts extends Game implements GameContext {
+public class TurboHearts extends Game implements GameContext, InputProcessor {
 
 	private AssetManager manager;
 	private SpriteBatch spriteBatch;
@@ -36,6 +40,9 @@ public class TurboHearts extends Game implements GameContext {
 	private AuthManager authManager;
 	private ContentManager contentManager;
 	private LobbyManager lobbyManager;
+
+	private TurboScreen currentTurboScreen;
+	private InputMultiplexer inputMultiplexer = new InputMultiplexer(this);
 
 	public TurboHearts(
 			AuthManager authManager,
@@ -57,6 +64,8 @@ public class TurboHearts extends Game implements GameContext {
 
 	@Override
 	public void create () {
+		Gdx.input.setCatchBackKey(true);
+		Gdx.input.setInputProcessor(inputMultiplexer);
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
 		spriteBatch = new SpriteBatch();
@@ -76,6 +85,13 @@ public class TurboHearts extends Game implements GameContext {
 		);
 		setScreen(new MainMenu(
 				this,
+				new Callable() {
+					@Override
+					public Object call() {
+						Gdx.app.exit();
+						return null;
+					}
+				},
 				new Callable() {
 					@Override
 					public Object call() {
@@ -115,9 +131,9 @@ public class TurboHearts extends Game implements GameContext {
 						return null;
 					}
 				},
-				new Avatar("Deep Red (Random AI)"),
-				new Avatar("Groundnet (Random AI)"),
-				new Avatar("Trapratus (Random AI)")));
+				new Avatar("Light Blue (Random AI)"),
+				new Avatar("HAL 8999 (Random AI)"),
+				new Avatar("Crapratus (Random AI)")));
 	}
 
 	private void withRegistration(final AuthManager authManager, final Callable success, final Callable fail) {
@@ -160,6 +176,7 @@ public class TurboHearts extends Game implements GameContext {
 				setScreen(new Menu(
 						"Login failed: " + message,
 						TurboHearts.this,
+						fail,
 						new Menu.MenuItem("OK", fail))
 				);
 			}
@@ -169,6 +186,13 @@ public class TurboHearts extends Game implements GameContext {
 	private void withLogin(final Callable success, final Callable fail) {
 		if (authManager.getCurrentLogin() == null) {
 			setScreen(new LoginSelection(this,
+					new Callable() {
+						@Override
+						public Object call() {
+							fail.call();
+							return null;
+						}
+					},
 					new Callable() {
 						@Override
 						public Object call() {
@@ -258,9 +282,66 @@ public class TurboHearts extends Game implements GameContext {
 		return camera;
 	}
 
+	// We need to maintain ourselves in the inputprocessor list
+	// to support global back button
 	@Override
-	public void setScreen(Screen screen) {
+	public void setInputProcessor(InputProcessor inputProcessor) {
+		if (inputMultiplexer.size() == 2) {
+			inputMultiplexer.removeProcessor(1);
+		}
+		if (inputProcessor != null) {
+			inputMultiplexer.addProcessor(inputProcessor);
+		}
+	}
+
+	@Override
+	public void setScreen(TurboScreen screen) {
 		Gdx.app.log("TurboHearts", "Switching screen: " + screen.getClass().getCanonicalName());
-		super.setScreen(screen);
+		currentTurboScreen = screen;
+		setScreen((Screen) screen);
+	}
+
+	@Override
+	public boolean keyDown(int keycode) {
+		if(keycode == Input.Keys.BACK && currentTurboScreen != null){
+			currentTurboScreen.onBack();
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean keyUp(int keycode) {
+		return false;
+	}
+
+	@Override
+	public boolean keyTyped(char character) {
+		return false;
+	}
+
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		return false;
+	}
+
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		return false;
+	}
+
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		return false;
+	}
+
+	@Override
+	public boolean mouseMoved(int screenX, int screenY) {
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(int amount) {
+		return false;
 	}
 }

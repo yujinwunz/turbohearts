@@ -1,7 +1,6 @@
 package com.demodu.turbohearts.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -25,11 +24,17 @@ import static com.demodu.turbohearts.assets.Assets.Colors.BACKGROUND_COLOUR_R;
  * Created by yujinwunz on 27/03/2017.
  */
 
-public class RegisterUsername extends ScreenAdapter {
+public class RegisterUsername extends TurboScreen {
 
 	private Stage stage = new Stage(new StretchViewport(800, 480));
+	private RegisterCallback registerCallback;
+	private GameContext gameContext;
 
 	public RegisterUsername(GameContext gameContext, final RegisterCallback registerCallback) {
+
+		this.registerCallback = registerCallback;
+		this.gameContext = gameContext;
+
 		Table table = new Table();
 		table.setFillParent(true);
 		table.center();
@@ -97,7 +102,7 @@ public class RegisterUsername extends ScreenAdapter {
 		table.add(registerButton);
 
 		stage.addActor(table);
-		Gdx.input.setInputProcessor(stage);
+		gameContext.setInputProcessor(stage);
 	}
 
 	@Override
@@ -110,17 +115,22 @@ public class RegisterUsername extends ScreenAdapter {
 
 	@Override
 	public void show() {
-		Gdx.input.setInputProcessor(stage);
+		gameContext.setInputProcessor(stage);
 	}
 
 	@Override
 	public void hide() {
-		Gdx.input.setInputProcessor(null);
+		gameContext.setInputProcessor(null);
 	}
 
 	@Override
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height, true);
+	}
+
+	@Override
+	public void onBack() {
+		registerCallback.onCancel();
 	}
 
 

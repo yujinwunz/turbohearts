@@ -5,11 +5,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by yujinwunz on 9/04/2017.
- */
-
-public class  	Config {
+public class  Config {
 	public final static URL SERVER_DOMAIN_NAME;
 
 	/**
@@ -23,7 +19,7 @@ public class  	Config {
 
 	static {
 		try {
-			SERVER_DOMAIN_NAME = new URL("https", "demodu.com", 80, "");
+			SERVER_DOMAIN_NAME = new URL("https://demodu.com");
 		} catch (MalformedURLException ex) {
 			throw new IllegalStateException("Server domain name is not a valid URL.");
 		}

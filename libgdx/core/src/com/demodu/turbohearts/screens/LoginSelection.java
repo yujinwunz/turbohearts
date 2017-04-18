@@ -10,6 +10,7 @@ import com.demodu.turbohearts.gwtcompat.Callable;
 public class LoginSelection extends Menu {
 	public LoginSelection(
 			GameContext gameContext,
+			Callable onBack,
 			Callable onFacebook,
 			Callable onGoogle,
 			Callable onUsername
@@ -17,9 +18,10 @@ public class LoginSelection extends Menu {
 		super(
 				"Login or register to continue",
 				gameContext,
-				new MenuItem("Login with Facebook", onFacebook),
+				onBack,
+				new MenuItem("Login with Facebook (lies)", onFacebook),
 				new MenuItem("Login with Google", onGoogle),
-				new MenuItem("Login with Username", onUsername)
+				new MenuItem("Login with Username (lies)", onUsername)
 		);
 	}
 }

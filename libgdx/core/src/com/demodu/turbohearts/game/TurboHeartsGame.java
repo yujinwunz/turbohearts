@@ -2,7 +2,6 @@ package com.demodu.turbohearts.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -16,19 +15,20 @@ import com.demodu.turbohearts.GameContext;
 import com.demodu.turbohearts.assets.AssetFactory;
 import com.demodu.turbohearts.assets.Assets;
 import com.demodu.turbohearts.crossplat.auth.Avatar;
+import com.demodu.turbohearts.game.player.DelayedPlayer;
 import com.demodu.turbohearts.gamelogic.Card;
 import com.demodu.turbohearts.gamelogic.GameConductor;
 import com.demodu.turbohearts.gamelogic.MoveReporter;
 import com.demodu.turbohearts.gwtcompat.Callable;
-import com.demodu.turbohearts.game.player.DelayedPlayer;
 import com.demodu.turbohearts.screens.Menu;
 import com.demodu.turbohearts.screens.ScoreScreen;
+import com.demodu.turbohearts.screens.TurboScreen;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TurboHeartsGame extends ScreenAdapter {
+public class TurboHeartsGame extends TurboScreen {
 	private int width = 800;
 	private int height = 480;
 
@@ -48,6 +48,8 @@ public class TurboHeartsGame extends ScreenAdapter {
 	private Texture background;
 
 	private ArrayList<ScoreScreen.RoundScore> scores = new ArrayList<ScoreScreen.RoundScore>();
+
+	private Callable onGameEnd;
 
 	MoveReporter moveReporter;
 	ArrayList<com.demodu.turbohearts.game.GdxCard> onTable = new ArrayList<com.demodu.turbohearts.game.GdxCard>();
@@ -72,6 +74,8 @@ public class TurboHeartsGame extends ScreenAdapter {
 		this.left = left;
 		this.across = across;
 		this.right = right;
+
+		this.onGameEnd = onGameEnd;
 
 		playerHand = new PlayerHand(13, 100, -50, 600, 140, gameContext, new PlayerHand.PlayHandler() {
 			@Override
@@ -141,7 +145,7 @@ public class TurboHeartsGame extends ScreenAdapter {
 		gameConductor.registerPlayer(player);
 		inputProcessor.addProcessor(playerHand);
 		inputProcessor.addProcessor(stage);
-		Gdx.input.setInputProcessor(inputProcessor);
+		gameContext.setInputProcessor(inputProcessor);
 	}
 
 	private void endGame(final Callable onGameEnd) {
@@ -161,7 +165,12 @@ public class TurboHeartsGame extends ScreenAdapter {
 		ScoreScreen scoreScreen = new ScoreScreen(scores, gameContext, new Callable() {
 			@Override
 			public Object call() {
-				gameContext.setScreen(new Menu(message, gameContext, new Menu.MenuItem("Ok", onGameEnd)));
+				gameContext.setScreen(new Menu(
+						message,
+						gameContext,
+						onGameEnd,
+						new Menu.MenuItem("Ok", onGameEnd)
+				));
 				return null;
 			}
 		});
@@ -406,9 +415,54 @@ public class TurboHeartsGame extends ScreenAdapter {
 		
 	}
 
+	public void pauseGame() {
+		gameContext.setScreen(
+				new Menu(
+						"Paused",
+						gameContext,
+						new Callable() {
+							@Override
+							public Object call() {
+								resumeGame();
+								return null;
+							}
+						},
+						Menu.createMenuItem("Resume", new Callable() {
+							@Override
+							public Object call() {
+								resumeGame();
+								return null;
+							}
+						}),
+						Menu.createMenuItem("Quit", new Callable() {
+							@Override
+							public Object call() {
+								onGameEnd.call();
+								return null;
+							}
+						})
+				)
+		);
+	}
+
+	public void resumeGame() {
+		gameContext.setScreen(this);
+	}
+
+
+	@Override
+	public void hide() {
+		gameContext.setInputProcessor(null);
+	}
+
 	@Override
 	public void show() {
-		Gdx.input.setInputProcessor(this.inputProcessor);
+		gameContext.setInputProcessor(this.inputProcessor);
+	}
+
+	@Override
+	public void onBack() {
+		pauseGame();
 	}
 
 	private enum Phase {

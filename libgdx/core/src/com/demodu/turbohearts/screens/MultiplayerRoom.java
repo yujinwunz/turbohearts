@@ -1,7 +1,6 @@
 package com.demodu.turbohearts.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -13,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.demodu.turbohearts.GameContext;
-import com.demodu.turbohearts.game.TurboHeartsGame;
 import com.demodu.turbohearts.assets.AssetFactory;
 import com.demodu.turbohearts.assets.Assets;
 import com.demodu.turbohearts.crossplat.auth.Avatar;
@@ -23,6 +21,7 @@ import com.demodu.turbohearts.crossplat.lobby.LobbyRoom;
 import com.demodu.turbohearts.crossplat.lobby.MatchId;
 import com.demodu.turbohearts.crossplat.lobby.MatchManager;
 import com.demodu.turbohearts.crossplat.lobby.RoomOptions;
+import com.demodu.turbohearts.game.TurboHeartsGame;
 import com.demodu.turbohearts.gamelogic.GameConductor;
 import com.demodu.turbohearts.gwtcompat.Callable;
 
@@ -32,7 +31,7 @@ import java.util.List;
  * Created by yujinwunz on 26/03/2017.
  */
 
-public class MultiplayerRoom extends ScreenAdapter {
+public class MultiplayerRoom extends TurboScreen {
 
 	private Stage stage = new Stage(new StretchViewport(800, 480));
 	private boolean hosting;
@@ -42,7 +41,7 @@ public class MultiplayerRoom extends ScreenAdapter {
 	private LobbyManager lobbyManager;
 	private Button startButton;
 	private Button leaveButton;
-	private boolean shouldShowLeaveMessage = true;
+	private ChangeListener leaveListener;
 
 	// Joined game
 	public MultiplayerRoom(
@@ -119,7 +118,7 @@ public class MultiplayerRoom extends ScreenAdapter {
 
 	private void onCancel(String message, final Callable onLeave) {
 		Gdx.app.log("MultiplayerRoom", "Cancelled");
-		gameContext.setScreen(new Menu(message, gameContext, new Menu.MenuItem("Ok", new Callable() {
+		gameContext.setScreen(new Menu(message, gameContext, onLeave, new Menu.MenuItem("Ok", new Callable() {
 			@Override
 			public Object call() {
 				onLeave.call();
@@ -174,19 +173,20 @@ public class MultiplayerRoom extends ScreenAdapter {
 				Assets.Colors.BACKGROUND_COLOUR_G,
 				Assets.Colors.BACKGROUND_COLOUR_B
 		));
-		leaveButton.addListener(new ChangeListener() {
+		leaveListener = new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
+				if (!leaveButton.isDisabled()) {
+					if (startButton != null) {
+						startButton.setDisabled(true);
+					}
+					leaveButton.setDisabled(true);
 
-				if (startButton != null) {
-					startButton.setDisabled(true);
+					lobbyManager.exitRoom();
 				}
-				leaveButton.setDisabled(true);
-
-				lobbyManager.exitRoom();
-				shouldShowLeaveMessage = false;
 			}
-		});
+		};
+		leaveButton.addListener(leaveListener);
 		table.add(leaveButton).left().bottom();
 		leaveButton.setDisabled(true);
 
@@ -225,16 +225,21 @@ public class MultiplayerRoom extends ScreenAdapter {
 
 	@Override
 	public void show() {
-		Gdx.input.setInputProcessor(stage);
+		gameContext.setInputProcessor(stage);
 	}
 
 	@Override
 	public void hide() {
-		Gdx.input.setInputProcessor(null);
+		gameContext.setInputProcessor(null);
 	}
 
 	@Override
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height);
+	}
+
+	@Override
+	public void onBack() {
+		leaveListener.changed(null, null);
 	}
 }

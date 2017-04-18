@@ -1,7 +1,6 @@
 package com.demodu.turbohearts.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -21,10 +20,14 @@ import static com.demodu.turbohearts.assets.Assets.Colors.BACKGROUND_COLOUR_B;
 import static com.demodu.turbohearts.assets.Assets.Colors.BACKGROUND_COLOUR_G;
 import static com.demodu.turbohearts.assets.Assets.Colors.BACKGROUND_COLOUR_R;
 
-public class Menu extends ScreenAdapter {
+public class Menu extends TurboScreen {
 	private Stage stage;
+	private Callable onBack;
+	private GameContext gameContext;
 
-	public Menu(String title, GameContext gameContext, MenuItem... menuItems) {
+	public Menu(String title, GameContext gameContext, Callable onBack, MenuItem... menuItems) {
+		this.onBack = onBack;
+		this.gameContext = gameContext;
 
 		stage = new Stage(new StretchViewport(800, 480));
 		com.badlogic.gdx.scenes.scene2d.ui.Table table = new Table();
@@ -55,11 +58,7 @@ public class Menu extends ScreenAdapter {
 			button.addListener(new ChangeListener() {
 				@Override
 				public void changed (ChangeEvent event, Actor actor) {
-					try {
-						final_m.callable.call();
-					} catch (Exception e) {
-						Gdx.app.error("Menu", "Menu item exception", e);
-					}
+					final_m.callable.call();
 				}
 			});
 			table.add(button).pad(20f);
@@ -78,12 +77,17 @@ public class Menu extends ScreenAdapter {
 
 	@Override
 	public void show() {
-		Gdx.input.setInputProcessor(stage);
+		 gameContext.setInputProcessor(stage);
 	}
 
 	@Override
 	public void hide() {
-		Gdx.input.setInputProcessor(null);
+		gameContext.setInputProcessor(null);
+	}
+
+	@Override
+	public void onBack() {
+		onBack.call();
 	}
 
 	public static class MenuItem {
