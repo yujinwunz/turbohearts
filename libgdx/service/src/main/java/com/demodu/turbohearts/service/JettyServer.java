@@ -7,13 +7,19 @@ import com.demodu.turbohearts.service.game.LiveGameManager;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -43,6 +49,12 @@ public class JettyServer {
 	@Parameter(names="-port")
 	private int port=8080;
 
+	@Parameter(names="-jerseylog")
+	private String jerseyLog = "jersey.log";
+
+	@Parameter(names="-eventBuslog")
+	private String eventBusLog = "eventbus.log";
+
 	public static void main(String args[]) {
 		JettyServer main = new JettyServer();
 
@@ -71,8 +83,22 @@ public class JettyServer {
 		liveGameManager = new LiveGameManager();
 	}
 
-	private static void setupEventPipeline() {
-		eventBus = new EventBus();
+	private void setupEventPipeline() {
+		Logger logger = null;
+
+		try {
+			FileHandler fh = new FileHandler(eventBusLog);
+			logger = Logger.getLogger("event");
+			logger.addHandler(fh);
+			SimpleFormatter formatter = new SimpleFormatter();
+			fh.setFormatter(formatter);
+			logger.setLevel(Level.ALL);
+
+		} catch (IOException ex) {
+			System.err.println("Couldn't set up event bus logs");
+		}
+
+		eventBus = new EventBus(logger);
 		for (int i = 0; i < BACKGROUND_THREADS; i++) {
 			eventBus.startWorkerThread();
 		}
@@ -105,6 +131,20 @@ public class JettyServer {
 			put("com.sun.jersey.api.json.POJOMappingFeature", true);
 		}});
 
+		// This block configure the logger with handler and formatter
+		try {
+			FileHandler fh = new FileHandler(jerseyLog);
+			Logger logger = Logger.getLogger("jetty");
+			logger.addHandler(fh);
+			SimpleFormatter formatter = new SimpleFormatter();
+			fh.setFormatter(formatter);
+			logger.setLevel(Level.ALL);
+
+			config.register(new LoggingFeature(logger, LoggingFeature.Verbosity.PAYLOAD_ANY));
+		} catch (IOException ex) {
+			System.err.println("Couldn't set up jersey logs");
+		}
+
 		Server server = JettyHttpContainerFactory.createServer(baseUri, sslContextFactory, config);
 
 		try {
@@ -113,6 +153,7 @@ public class JettyServer {
 		} catch (Exception e) {
 			throw new UnknownError("Could not start the jetty server");
 		}
+
 	}
 
 	private static void setUpHibernate() {
