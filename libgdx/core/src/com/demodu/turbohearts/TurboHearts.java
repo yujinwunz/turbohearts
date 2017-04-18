@@ -30,8 +30,18 @@ import com.demodu.turbohearts.screens.RegisterUsername;
 import com.demodu.turbohearts.screens.TurboScreen;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class TurboHearts extends Game implements GameContext, InputProcessor {
+
+	private static final String[] AI_NAMES = {
+			"Ocean", "Laboratus", "HAL 8999", "Singlevac", "Asthma drug", "Shallow Thought",
+			"Stormmaker", "The Array", "Queen of Hearts", "Dr. Understand", "I.G.N.O.R.A.N.C.E",
+			"FRIEND", "KATT", "KARAVAN", "The Junction", "PipGirl", "punchdex", "periphitana",
+			"GLaUNIX", "L.E.N.S", "Oasis", "BetaStop", "StockBird", "Whyson", "Dogfram Beta",
+			"DumbBot", "LIZZY", "MuscleHalt"};
+	private static final List<String> AI_NAMES_LIST = Arrays.asList(AI_NAMES);
 
 	private AssetManager manager;
 	private SpriteBatch spriteBatch;
@@ -117,6 +127,7 @@ public class TurboHearts extends Game implements GameContext, InputProcessor {
 	}
 
 	private void singlePlayer() {
+		Collections.shuffle(AI_NAMES_LIST);
 		setScreen(new TurboHeartsGame(
 				this,
 				new LocalGameConductor(
@@ -131,9 +142,10 @@ public class TurboHearts extends Game implements GameContext, InputProcessor {
 						return null;
 					}
 				},
-				new Avatar("Light Blue (Random AI)"),
-				new Avatar("HAL 8999 (Random AI)"),
-				new Avatar("Crapratus (Random AI)")));
+				new Avatar(AI_NAMES_LIST.get(0) + " (Random AI)"),
+				new Avatar(AI_NAMES_LIST.get(1) + " (Random AI)"),
+				new Avatar(AI_NAMES_LIST.get(2) + " (Random AI)"))
+		);
 	}
 
 	private void withRegistration(final AuthManager authManager, final Callable success, final Callable fail) {
