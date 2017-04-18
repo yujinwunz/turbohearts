@@ -34,7 +34,7 @@ public class JettyServer {
 	@Parameter(names = "-keystore-alias")
 	private String keystoreAlias = null;
 
-	@Parameter(names = "-keystore-pass", password = true)
+	@Parameter(names = "-keystore-pass")
 	private String keystorePass = null;
 
 	@Parameter(names="-hostname")
@@ -86,6 +86,7 @@ public class JettyServer {
 			factory.setKeyStorePath(keystorePath);
 			factory.setKeyStorePassword(keystorePass);
 			factory.setTrustStorePath(keystorePath);
+
 			return factory;
 		} else {
 			return null;
