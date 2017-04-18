@@ -107,6 +107,7 @@ project(":service") {
     task run(type: JavaExec) {
         classpath = sourceSets.main.runtimeClasspath
         main = "com.demodu.turbohearts.service.JettyServer"
+        jvmArgs = ["-DDEBUG=true","-Dorg.eclipse.jetty.LEVEL=DEBUG","-Djavax.net.debug=ssl,handshake,data"]
         if (project.hasProperty("appArgs")) {
             args Eval.me(appArgs)
         }

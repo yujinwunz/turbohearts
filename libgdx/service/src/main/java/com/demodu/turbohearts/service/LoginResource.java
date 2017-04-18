@@ -31,6 +31,12 @@ import static com.demodu.turbohearts.service.Global.verifier;
 @Path("/auth")
 public class LoginResource {
 
+	@GET
+	@Path("test")
+	public Response test() {
+		return Response.status(200).entity("hello! Test success").build();
+	}
+
 	@POST
 	@Path("login")
 	@Consumes( { MediaType.APPLICATION_JSON })
